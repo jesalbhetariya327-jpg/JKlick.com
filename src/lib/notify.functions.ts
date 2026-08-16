@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { escapeHtml } from "./html-escape";
 
 const schema = z.object({
   shopName: z.string().trim().max(200),
@@ -56,9 +57,3 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
       return { sent: false as const };
     }
   });
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c,
-  );
-}

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, formatINR, type Product, type Shop } from "@/lib/catalog";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/$shopSlug")({
   head: () => ({

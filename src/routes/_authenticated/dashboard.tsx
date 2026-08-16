@@ -161,8 +161,8 @@ function Dashboard() {
 
         {shop && (
           <Link
-            to="/shop/$shopId"
-            params={{ shopId: shop.id }}
+            to="/$shopSlug"
+            params={{ shopSlug: shop.slug }}
             className="mt-3 inline-flex items-center gap-1 text-sm underline underline-offset-4 opacity-90"
           >
             <ExternalLink className="size-4" /> View my public storefront

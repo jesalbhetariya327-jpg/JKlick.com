@@ -14,13 +14,163 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          category: string
+          color: string | null
+          cost_price: number
+          created_at: string
+          fabric: string | null
+          id: string
+          notes: string | null
+          photo_url: string | null
+          product_name: string
+          quantity: number
+          selling_price: number
+          shop_id: string
+          size: string | null
+          sku: string | null
+          subcategory: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          color?: string | null
+          cost_price?: number
+          created_at?: string
+          fabric?: string | null
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          product_name: string
+          quantity?: number
+          selling_price?: number
+          shop_id: string
+          size?: string | null
+          sku?: string | null
+          subcategory?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          color?: string | null
+          cost_price?: number
+          created_at?: string
+          fabric?: string | null
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          product_name?: string
+          quantity?: number
+          selling_price?: number
+          shop_id?: string
+          size?: string | null
+          sku?: string | null
+          subcategory?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shops: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          owner_name: string
+          shop_name: string
+          user_id: string
+          whatsapp_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          owner_name: string
+          shop_name: string
+          user_id: string
+          whatsapp_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          owner_name?: string
+          shop_name?: string
+          user_id?: string
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      stock_log: {
+        Row: {
+          change_amount: number
+          created_at: string
+          id: string
+          product_id: string
+          reason: string
+        }
+        Insert: {
+          change_amount: number
+          created_at?: string
+          id?: string
+          product_id: string
+          reason?: string
+        }
+        Update: {
+          change_amount?: number
+          created_at?: string
+          id?: string
+          product_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_log_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tryon_usage: {
+        Row: {
+          count: number
+          id: string
+          session_id: string
+          updated_at: string
+          usage_date: string
+        }
+        Insert: {
+          count?: number
+          id?: string
+          session_id: string
+          updated_at?: string
+          usage_date?: string
+        }
+        Update: {
+          count?: number
+          id?: string
+          session_id?: string
+          updated_at?: string
+          usage_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      owns_shop: { Args: { _shop_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

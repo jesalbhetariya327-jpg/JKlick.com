@@ -96,7 +96,7 @@ export type Database = {
           id?: string
           owner_name: string
           shop_name: string
-          slug: string
+          slug?: string
           user_id: string
           whatsapp_number?: string | null
         }

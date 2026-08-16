@@ -1,0 +1,1 @@
+ALTER TABLE public.shops ALTER COLUMN slug SET DEFAULT '';

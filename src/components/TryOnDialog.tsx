@@ -21,7 +21,6 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [remaining, setRemaining] = useState<number | null>(null);
 
   const reset = () => {
     setPreview(null);
@@ -58,7 +57,6 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
         toast.error(response.error);
       } else if ("imageUrl" in response && response.imageUrl) {
         setResult(response.imageUrl);
-        setRemaining(response.remaining ?? null);
       }
     } catch {
       toast.error("Something went wrong creating your look");
@@ -97,11 +95,6 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
         ) : result ? (
           <div className="space-y-4">
             <img src={result} alt={`You wearing ${product.product_name}`} className="w-full rounded-xl" />
-            {remaining !== null && (
-              <p className="text-center text-xs text-muted-foreground">
-                {remaining} free try-on{remaining === 1 ? "" : "s"} left today
-              </p>
-            )}
             <Button variant="secondary" className="h-12 w-full text-base" onClick={reset}>
               Try another outfit
             </Button>
@@ -143,7 +136,7 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
               }}
             />
             <p className="text-center text-xs text-muted-foreground">
-              3 free try-ons per day. Your photo is never saved.
+              Unlimited free try-ons. Your photo is never saved.
             </p>
           </div>
         )}

@@ -13,20 +13,6 @@ export const generateTryOn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runTryOn } = await import("./tryon-provider.server");
-    const DAILY_LIMIT = 3;
-
-    const today = new Date().toISOString().slice(0, 10);
-
-    const { data: usage } = await supabaseAdmin
-      .from("tryon_usage")
-      .select("id, count")
-      .eq("session_id", data.sessionId)
-      .eq("usage_date", today)
-      .maybeSingle();
-
-    if ((usage?.count ?? 0) >= DAILY_LIMIT) {
-      return { error: `You've used all ${DAILY_LIMIT} free try-ons for today. Come back tomorrow!` };
-    }
 
     const { data: product } = await supabaseAdmin
       .from("products")
@@ -60,31 +46,5 @@ export const generateTryOn = createServerFn({ method: "POST" })
 
     if ("error" in result) return { error: result.error };
 
-    if (usage) {
-      await supabaseAdmin
-        .from("tryon_usage")
-        .update({ count: usage.count + 1, updated_at: new Date().toISOString() })
-        .eq("id", usage.id);
-    } else {
-      await supabaseAdmin
-        .from("tryon_usage")
-        .insert({ session_id: data.sessionId, usage_date: today, count: 1 });
-    }
-
-    const remaining = DAILY_LIMIT - ((usage?.count ?? 0) + 1);
-    return { imageUrl: result.imageUrl, remaining };
-  });
-
-export const getTryOnQuota = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ sessionId: z.string().min(8).max(100) }).parse(input))
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: usage } = await supabaseAdmin
-      .from("tryon_usage")
-      .select("count")
-      .eq("session_id", data.sessionId)
-      .eq("usage_date", today)
-      .maybeSingle();
-    return { remaining: Math.max(0, 3 - (usage?.count ?? 0)) };
+    return { imageUrl: result.imageUrl };
   });

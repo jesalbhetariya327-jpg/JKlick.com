@@ -86,6 +86,7 @@ export type Database = {
           id: string
           owner_name: string
           shop_name: string
+          slug: string
           user_id: string
           whatsapp_number: string | null
         }
@@ -95,6 +96,7 @@ export type Database = {
           id?: string
           owner_name: string
           shop_name: string
+          slug?: string
           user_id: string
           whatsapp_number?: string | null
         }
@@ -104,6 +106,7 @@ export type Database = {
           id?: string
           owner_name?: string
           shop_name?: string
+          slug?: string
           user_id?: string
           whatsapp_number?: string | null
         }
@@ -171,6 +174,7 @@ export type Database = {
     }
     Functions: {
       owns_shop: { Args: { _shop_id: string }; Returns: boolean }
+      shop_slugify: { Args: { _name: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

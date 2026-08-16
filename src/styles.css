@@ -138,6 +138,11 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@theme inline {
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -146,5 +151,26 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-tap-highlight-color: transparent;
   }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility bg-royal {
+  background-image: var(--gradient-royal);
+}
+
+@utility bg-marigold {
+  background-image: var(--gradient-marigold);
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
 }

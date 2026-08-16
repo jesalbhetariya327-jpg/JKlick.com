@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { KeyRound } from "lucide-react";
+import { PasswordChecklist } from "@/components/PasswordChecklist";
+import { firstPasswordProblem } from "@/lib/password";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -33,12 +35,13 @@ function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    const problem = firstPasswordProblem(password);
+    if (problem) {
+      toast.error(problem);
       return;
     }
     if (password !== confirm) {
-      toast.error("Passwords do not match");
+      toast.error("Both passwords must match");
       return;
     }
     setBusy(true);
@@ -73,6 +76,7 @@ function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <PasswordChecklist value={password} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm password</Label>

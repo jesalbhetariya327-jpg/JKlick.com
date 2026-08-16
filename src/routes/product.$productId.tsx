@@ -6,6 +6,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR, whatsappLink, type Product, type Shop } from "@/lib/catalog";
 import { TryOnDialog } from "@/components/TryOnDialog";
+import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -58,13 +59,12 @@ function ProductPage() {
     <div className="min-h-screen bg-background pb-40">
       <div className="relative">
         <div className="aspect-[3/4] w-full bg-muted">
-          {product.photo_url ? (
-            <img
-              src={product.photo_url}
-              alt={product.product_name}
-              className="size-full object-cover"
-            />
-          ) : null}
+          <ProductImage
+            src={product.photo_url}
+            alt={product.product_name}
+            className="size-full object-cover"
+            loading="eager"
+          />
         </div>
         <Link
           to={shop ? "/$shopSlug" : "/"}

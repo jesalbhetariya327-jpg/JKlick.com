@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, formatINR, type Product, type Shop } from "@/lib/catalog";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/$shopSlug")({
   head: () => ({
@@ -135,14 +136,11 @@ function ShopStorefront() {
               className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft"
             >
               <div className="aspect-[3/4] bg-muted">
-                {product.photo_url ? (
-                  <img
-                    src={product.photo_url}
-                    alt={product.product_name}
-                    className="size-full object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
+                <ProductImage
+                  src={product.photo_url}
+                  alt={product.product_name}
+                  className="size-full object-cover"
+                />
               </div>
               <div className="p-3">
                 <p className="truncate text-sm font-semibold">{product.product_name}</p>

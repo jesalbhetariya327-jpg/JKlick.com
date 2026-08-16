@@ -28,6 +28,19 @@ function isAllowedProductPhoto(url: string): boolean {
   return parsed.pathname.startsWith("/storage/v1/object/");
 }
 
+/** Extract the object path inside the product-photos bucket from a storage URL. */
+function storagePathFromUrl(url: string): string | null {
+  try {
+    const { pathname } = new URL(url);
+    const marker = "/product-photos/";
+    const index = pathname.indexOf(marker);
+    if (index === -1) return null;
+    return decodeURIComponent(pathname.slice(index + marker.length));
+  } catch {
+    return null;
+  }
+}
+
 export const generateTryOn = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => schema.parse(input))
   .handler(async ({ data }) => {
@@ -71,12 +84,24 @@ export const generateTryOn = createServerFn({ method: "POST" })
 
     let garmentImage: string;
     try {
-      const res = await fetch(product.photo_url, { redirect: "error" });
-      if (!res.ok) throw new Error(String(res.status));
-      const contentType = res.headers.get("content-type") ?? "image/jpeg";
-      if (!contentType.startsWith("image/")) throw new Error("not an image");
-      const buffer = await res.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
+      const objectPath = storagePathFromUrl(product.photo_url);
+      let blob: Blob | null = null;
+
+      if (objectPath) {
+        const { data: file } = await supabaseAdmin.storage
+          .from("product-photos")
+          .download(objectPath);
+        blob = file ?? null;
+      }
+
+      if (!blob) {
+        const res = await fetch(product.photo_url, { redirect: "error" });
+        if (!res.ok) throw new Error(String(res.status));
+        blob = await res.blob();
+      }
+
+      const contentType = blob.type && blob.type.startsWith("image/") ? blob.type : "image/jpeg";
+      const base64 = Buffer.from(await blob.arrayBuffer()).toString("base64");
       garmentImage = `data:${contentType};base64,${base64}`;
     } catch {
       return { error: "Could not load the product photo." };

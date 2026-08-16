@@ -73,7 +73,7 @@ export const generateTryOn = createServerFn({ method: "POST" })
 
     const { data: product } = await supabaseAdmin
       .from("products")
-      .select("product_name, category, color, fabric, photo_url")
+      .select("shop_id, product_name, category, color, fabric, photo_url")
       .eq("id", data.productId)
       .maybeSingle();
 
@@ -119,6 +119,10 @@ export const generateTryOn = createServerFn({ method: "POST" })
     });
 
     if ("error" in result) return { error: result.error };
+
+    await supabaseAdmin
+      .from("tryon_log")
+      .insert({ shop_id: product.shop_id, product_id: data.productId });
 
     return { imageUrl: result.imageUrl };
   });

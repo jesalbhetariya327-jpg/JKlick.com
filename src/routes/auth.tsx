@@ -12,6 +12,7 @@ import { ArrowLeft, Store } from "lucide-react";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
 import { requestPasswordOtp, verifyPasswordOtp } from "@/lib/account.functions";
+import { notifyNewSignup } from "@/lib/notify.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -133,6 +134,14 @@ function AuthPage() {
       }
     }
     await ensureShop(session.user, { ownerName, shopName, whatsapp, email: email.trim() });
+    void notifyNewSignup({
+      data: {
+        shopName: shopName.trim(),
+        ownerName: ownerName.trim(),
+        email: email.trim(),
+        phone: whatsapp.trim() || null,
+      },
+    }).catch(() => undefined);
     setBusy(false);
     toast.success("Shop created!");
     navigate({ to: "/dashboard", replace: true });

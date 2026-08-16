@@ -62,6 +62,7 @@ function Dashboard() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const shopQuery = useQuery({
     queryKey: ["my-shop"],
@@ -136,6 +137,22 @@ function Dashboard() {
     }
     toast.success("Product deleted");
     void queryClient.invalidateQueries({ queryKey: ["my-products", shop?.id] });
+  };
+
+  const storefrontUrl = shop
+    ? `${typeof window === "undefined" ? "" : window.location.origin}/${shop.slug}`
+    : "";
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(storefrontUrl);
+    } catch {
+      toast.error("Could not copy — please copy the link manually");
+      return;
+    }
+    setCopied(true);
+    toast.success("Storefront link copied");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const signOut = async () => {

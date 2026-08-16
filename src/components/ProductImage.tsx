@@ -34,7 +34,10 @@ export function ProductImage({ src, alt, className, loading = "lazy" }: Props) {
       alt={alt}
       className={className}
       loading={loading}
+      decoding="async"
+      fetchPriority={loading === "eager" ? "high" : "low"}
       onError={() => setFailed(true)}
     />
   );
+
 }

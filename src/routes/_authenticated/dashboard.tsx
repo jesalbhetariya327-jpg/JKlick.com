@@ -59,7 +59,7 @@ function Dashboard() {
       if (!auth.user) return null;
       const { data } = await supabase
         .from("shops")
-        .select("*")
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, created_at")
         .eq("user_id", auth.user.id)
         .maybeSingle();
       return (data as Shop | null) ?? null;

@@ -2,7 +2,18 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { LogOut, Minus, Plus, Search, Pencil, Trash2, Store, ExternalLink } from "lucide-react";
+import {
+  LogOut,
+  Minus,
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  Store,
+  ExternalLink,
+  Copy,
+  Check,
+} from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -160,13 +171,28 @@ function Dashboard() {
         </div>
 
         {shop && (
-          <Link
-            to="/$shopSlug"
-            params={{ shopSlug: shop.slug }}
-            className="mt-3 inline-flex items-center gap-1 text-sm underline underline-offset-4 opacity-90"
-          >
-            <ExternalLink className="size-4" /> View my public storefront
-          </Link>
+          <div className="mt-4 rounded-xl bg-background/15 p-3 backdrop-blur">
+            <p className="text-xs opacity-80">Your storefront link</p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="min-w-0 flex-1 truncate text-sm font-medium">{storefrontUrl}</p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-9 shrink-0"
+                onClick={() => void copyLink()}
+              >
+                {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                {copied ? "Copied" : "Copy link"}
+              </Button>
+            </div>
+            <Link
+              to="/$shopSlug"
+              params={{ shopSlug: shop.slug }}
+              className="mt-2 inline-flex items-center gap-1 text-sm underline underline-offset-4 opacity-90"
+            >
+              <ExternalLink className="size-4" /> Open my storefront
+            </Link>
+          </div>
         )}
       </header>
 

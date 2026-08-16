@@ -16,7 +16,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
-import { Route as ShopShopIdRouteImport } from './routes/shop.$shopId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,11 +51,6 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
   path: '/product/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShopShopIdRoute = ShopShopIdRouteImport.update({
-  id: '/shop/$shopId',
-  path: '/shop/$shopId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,7 +59,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/product/$productId': typeof ProductProductIdRoute
-  '/shop/$shopId': typeof ShopShopIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -74,7 +67,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/product/$productId': typeof ProductProductIdRoute
-  '/shop/$shopId': typeof ShopShopIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,7 +77,6 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/product/$productId': typeof ProductProductIdRoute
-  '/shop/$shopId': typeof ShopShopIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,7 +87,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/product/$productId'
-    | '/shop/$shopId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -105,7 +95,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/product/$productId'
-    | '/shop/$shopId'
   id:
     | '__root__'
     | '/'
@@ -115,7 +104,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/dashboard'
     | '/product/$productId'
-    | '/shop/$shopId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -125,7 +113,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
-  ShopShopIdRoute: typeof ShopShopIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -179,13 +166,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shop/$shopId': {
-      id: '/shop/$shopId'
-      path: '/shop/$shopId'
-      fullPath: '/shop/$shopId'
-      preLoaderRoute: typeof ShopShopIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -207,7 +187,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ProductProductIdRoute: ProductProductIdRoute,
-  ShopShopIdRoute: ShopShopIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

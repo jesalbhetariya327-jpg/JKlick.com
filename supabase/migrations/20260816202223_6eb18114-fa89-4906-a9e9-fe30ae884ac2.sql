@@ -1,0 +1,1 @@
+GRANT SELECT (id, is_active) ON public.shops TO anon, authenticated;

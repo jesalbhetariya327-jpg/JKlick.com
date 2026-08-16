@@ -23,6 +23,7 @@ export type Shop = {
   owner_name: string;
   shop_name: string;
   slug: string;
+  is_active: boolean;
   
   whatsapp_number: string | null;
   created_at: string;

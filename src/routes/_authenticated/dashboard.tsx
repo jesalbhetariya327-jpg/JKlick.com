@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Copy,
   Check,
+  ShieldCheck,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -72,7 +73,7 @@ function Dashboard() {
       if (!auth.user) return null;
       const { data } = await supabase
         .from("shops")
-        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, created_at")
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
         .eq("user_id", auth.user.id)
         .maybeSingle();
       return (data as Shop | null) ?? null;
@@ -80,6 +81,20 @@ function Dashboard() {
   });
 
   const shop = shopQuery.data ?? null;
+
+  const adminQuery = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return false;
+      const { data } = await supabase
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", auth.user.id)
+        .maybeSingle();
+      return !!data;
+    },
+  });
 
   const productsQuery = useQuery({
     queryKey: ["my-products", shop?.id],
@@ -176,6 +191,21 @@ function Dashboard() {
             <LogOut className="size-4" />
           </Button>
         </div>
+
+        {shop && !shop.is_active && (
+          <div className="mt-4 rounded-xl bg-destructive/90 p-3 text-sm text-destructive-foreground">
+            Your shop is suspended. Your storefront link is hidden from shoppers.
+          </div>
+        )}
+
+        {adminQuery.data && (
+          <Link
+            to="/admin"
+            className="mt-4 inline-flex items-center gap-1 rounded-full bg-background/15 px-3 py-1.5 text-sm backdrop-blur"
+          >
+            <ShieldCheck className="size-4" /> Admin analytics
+          </Link>
+        )}
 
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-background/15 p-3 backdrop-blur">

@@ -39,10 +39,11 @@ function ShopStorefront() {
     queryFn: async () => {
       const { data: shop } = await supabase
         .from("shops")
-        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, created_at")
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
         .eq("slug", shopSlug)
         .maybeSingle();
       if (!shop) return { shop: null, products: [] as Product[] };
+      if (!(shop as Shop).is_active) return { shop: shop as Shop, products: [] as Product[] };
       const { data: products } = await supabase
         .from("products")
         .select("*")
@@ -68,6 +69,14 @@ function ShopStorefront() {
       return matchesCategory && matchesSearch;
     });
   }, [products, category, search]);
+
+  if (!isLoading && shop && !shop.is_active) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-8 text-center">
+        <p className="text-muted-foreground">This shop is currently unavailable.</p>
+      </div>
+    );
+  }
 
   if (!isLoading && !shop) {
     return (

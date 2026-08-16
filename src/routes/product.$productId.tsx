@@ -43,7 +43,7 @@ function ProductPage() {
       if (!product) return { product: null, shop: null };
       const { data: shop } = await supabase
         .from("shops")
-        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, created_at")
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
         .eq("id", (product as Product).shop_id)
         .maybeSingle();
       return { product: product as Product, shop: (shop as Shop | null) ?? null };
@@ -55,6 +55,8 @@ function ProductPage() {
 
   if (isLoading) return <p className="p-6 text-center text-muted-foreground">Loading...</p>;
   if (!product) return <p className="p-6 text-center">Outfit not found.</p>;
+  if (shop && !shop.is_active)
+    return <p className="p-6 text-center">This shop is currently unavailable.</p>;
 
   return (
     <div className="min-h-screen bg-background pb-40">

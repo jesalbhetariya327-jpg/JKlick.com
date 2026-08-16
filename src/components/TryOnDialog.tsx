@@ -58,7 +58,6 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
         toast.error(response.error);
       } else if ("imageUrl" in response && response.imageUrl) {
         setResult(response.imageUrl);
-        setRemaining(response.remaining ?? null);
       }
     } catch {
       toast.error("Something went wrong creating your look");

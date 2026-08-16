@@ -8,6 +8,7 @@ import { CATEGORIES, formatINR, type Product, type Shop } from "@/lib/catalog";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/ProductImage";
+import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 
 export const Route = createFileRoute("/$shopSlug")({
   head: () => ({
@@ -78,6 +79,7 @@ function ShopStorefront() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
+      <OwnerLoginButton />
       <header className="bg-royal px-4 pb-8 pt-6 text-primary-foreground">
         <p className="text-xs uppercase tracking-[0.2em] opacity-85">Virar Ethnic Stock</p>
         <h1 className="mt-2 text-3xl font-bold leading-tight">{shop?.shop_name ?? "Shop"}</h1>

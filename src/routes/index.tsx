@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
 function Landing() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background px-6 text-center">
+      <OwnerLoginButton />
       <div className="flex size-16 items-center justify-center rounded-2xl bg-secondary">
         <Store className="size-8 text-primary" />
       </div>

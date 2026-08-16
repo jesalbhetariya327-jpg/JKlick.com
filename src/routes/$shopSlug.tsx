@@ -135,14 +135,11 @@ function ShopStorefront() {
               className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft"
             >
               <div className="aspect-[3/4] bg-muted">
-                {product.photo_url ? (
-                  <img
-                    src={product.photo_url}
-                    alt={product.product_name}
-                    className="size-full object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
+                <ProductImage
+                  src={product.photo_url}
+                  alt={product.product_name}
+                  className="size-full object-cover"
+                />
               </div>
               <div className="p-3">
                 <p className="truncate text-sm font-semibold">{product.product_name}</p>

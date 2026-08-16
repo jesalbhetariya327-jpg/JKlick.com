@@ -24,6 +24,7 @@ import {
   type Shop,
 } from "@/lib/catalog";
 import { ProductForm } from "@/components/ProductForm";
+import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -256,14 +257,11 @@ function Dashboard() {
           <Card key={product.id} className="overflow-hidden py-0 shadow-soft">
             <CardContent className="flex gap-3 p-3">
               <div className="size-24 shrink-0 overflow-hidden rounded-lg bg-muted">
-                {product.photo_url ? (
-                  <img
-                    src={product.photo_url}
-                    alt={product.product_name}
-                    className="size-full object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
+                <ProductImage
+                  src={product.photo_url}
+                  alt={product.product_name}
+                  className="size-full object-cover"
+                />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatINR, whatsappLink, type Product, type Shop } from "@/lib/catalog";
 import { TryOnDialog } from "@/components/TryOnDialog";
 import { ProductImage } from "@/components/ProductImage";
+import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -57,6 +58,7 @@ function ProductPage() {
 
   return (
     <div className="min-h-screen bg-background pb-40">
+      <OwnerLoginButton />
       <div className="relative">
         <div className="aspect-[3/4] w-full bg-muted">
           <ProductImage

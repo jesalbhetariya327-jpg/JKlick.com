@@ -41,7 +41,7 @@ function ProductPage() {
       if (!product) return { product: null, shop: null };
       const { data: shop } = await supabase
         .from("shops")
-        .select("*")
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, created_at")
         .eq("id", (product as Product).shop_id)
         .maybeSingle();
       return { product: product as Product, shop: (shop as Shop | null) ?? null };

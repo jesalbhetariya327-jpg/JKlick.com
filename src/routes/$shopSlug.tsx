@@ -37,7 +37,7 @@ function ShopStorefront() {
     queryFn: async () => {
       const { data: shop } = await supabase
         .from("shops")
-        .select("*")
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, created_at")
         .eq("slug", shopSlug)
         .maybeSingle();
       if (!shop) return { shop: null, products: [] as Product[] };

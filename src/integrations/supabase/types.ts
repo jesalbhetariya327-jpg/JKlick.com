@@ -173,7 +173,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      owns_shop: { Args: { _shop_id: string }; Returns: boolean }
       shop_slugify: { Args: { _name: string }; Returns: string }
     }
     Enums: {

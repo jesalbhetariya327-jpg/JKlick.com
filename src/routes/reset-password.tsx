@@ -1,0 +1,96 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { KeyRound } from "lucide-react";
+
+export const Route = createFileRoute("/reset-password")({
+  head: () => ({
+    meta: [
+      { title: "Set a New Password | Virar Ethnic Stock" },
+      {
+        name: "description",
+        content: "Choose a new password for your Virar Ethnic Stock shop owner account.",
+      },
+      { property: "og:title", content: "Set a New Password | Virar Ethnic Stock" },
+      { property: "og:description", content: "Complete your password reset for Virar Ethnic Stock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: ResetPasswordPage,
+});
+
+function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (password !== confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Password updated");
+    navigate({ to: "/dashboard", replace: true });
+  };
+
+  return (
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="mx-auto max-w-md">
+        <div className="mb-6 text-center">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-royal text-primary-foreground shadow-soft">
+            <KeyRound className="size-7" />
+          </div>
+          <h1 className="mt-4 text-2xl font-bold">Set a new password</h1>
+        </div>
+        <Card className="shadow-soft">
+          <CardContent className="space-y-4 p-5">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                className="h-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                className="h-12"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
+            </div>
+            <Button className="h-12 w-full text-base" disabled={busy} onClick={() => void submit()}>
+              {busy ? "Saving..." : "Update password"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

@@ -67,7 +67,8 @@ function ProductPage() {
           ) : null}
         </div>
         <Link
-          to="/"
+          to={shop ? "/$shopSlug" : "/"}
+          params={shop ? { shopSlug: shop.slug } : {}}
           className="absolute left-4 top-4 inline-flex size-10 items-center justify-center rounded-full bg-background/90 shadow-soft"
           aria-label="Back"
         >

@@ -43,19 +43,24 @@ function AuthPage() {
   }, [navigate]);
 
   const sendCode = async () => {
-    if (!email.trim()) return toast.error("Enter your email address");
+    if (!email.trim()) {
+      toast.error("Enter your email address");
+      return;
+    }
     if (mode === "signup" && (!ownerName.trim() || !shopName.trim())) {
-      return toast.error("Enter your name and shop name");
+      toast.error("Enter your name and shop name");
+      return;
     }
     setBusy(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
         shouldCreateUser: mode === "signup",
-        data:
-          mode === "signup"
-            ? { owner_name: ownerName.trim(), shop_name: shopName.trim(), whatsapp_number: whatsapp.trim() }
-            : undefined,
+        data: {
+          owner_name: ownerName.trim(),
+          shop_name: shopName.trim(),
+          whatsapp_number: whatsapp.trim(),
+        },
       },
     });
     setBusy(false);

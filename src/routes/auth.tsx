@@ -13,6 +13,7 @@ import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
 import { requestPasswordOtp, verifyPasswordOtp } from "@/lib/account.functions";
 import { notifyNewSignup } from "@/lib/notify.functions";
+import { recordLogin } from "@/lib/login-log";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -134,6 +135,7 @@ function AuthPage() {
       }
     }
     await ensureShop(session.user, { ownerName, shopName, whatsapp, email: email.trim() });
+    void recordLogin(session.user.id);
     void notifyNewSignup({
       data: {
         shopName: shopName.trim(),
@@ -163,6 +165,7 @@ function AuthPage() {
       return;
     }
     await ensureShop(data.session.user, { ownerName, shopName, whatsapp, email: email.trim() });
+    void recordLogin(data.session.user.id);
     setBusy(false);
     toast.success("Welcome back!");
     navigate({ to: "/dashboard", replace: true });

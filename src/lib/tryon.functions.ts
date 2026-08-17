@@ -112,6 +112,7 @@ export const generateTryOn = createServerFn({ method: "POST" })
       .filter(Boolean)
       .join(" ");
 
+    const startedAt = Date.now();
     const result = await runTryOn({
       personImage: data.personImage,
       garmentImage,
@@ -122,7 +123,12 @@ export const generateTryOn = createServerFn({ method: "POST" })
 
     await supabaseAdmin
       .from("tryon_log")
-      .insert({ shop_id: product.shop_id, product_id: data.productId });
+      .insert({
+        shop_id: product.shop_id,
+        product_id: data.productId,
+        session_id: data.sessionId,
+        duration_ms: Date.now() - startedAt,
+      });
 
     return { imageUrl: result.imageUrl };
   });

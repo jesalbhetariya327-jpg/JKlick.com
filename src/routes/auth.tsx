@@ -464,6 +464,14 @@ function AuthPage() {
                     ? "Already registered? Log in"
                     : "New shop? Create an account"}
                 </button>
+
+                <Link
+                  to="/customer-login"
+                  className="block w-full text-center text-sm text-muted-foreground underline underline-offset-4"
+                >
+                  Shopping instead? Shopper login
+                </Link>
+
               </>
             )}
           </CardContent>

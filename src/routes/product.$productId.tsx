@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR, whatsappLink, type Product, type Shop } from "@/lib/catalog";
 import { TryOnDialog } from "@/components/TryOnDialog";
 import { ProductImage } from "@/components/ProductImage";
 import { OwnerLoginButton } from "@/components/OwnerLoginButton";
+import { addToCart, useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -52,6 +54,7 @@ function ProductPage() {
 
   const product = data?.product ?? null;
   const shop = data?.shop ?? null;
+  const { count } = useCart(shop?.id);
 
   if (isLoading) return <p className="p-6 text-center text-muted-foreground">Loading...</p>;
   if (!product) return <p className="p-6 text-center">Outfit not found.</p>;
@@ -59,7 +62,7 @@ function ProductPage() {
     return <p className="p-6 text-center">This shop is currently unavailable.</p>;
 
   return (
-    <div className="min-h-screen bg-background pb-40">
+    <div className="min-h-screen bg-background pb-64">
       <OwnerLoginButton />
       <div className="relative">
         <div className="aspect-[3/4] w-full bg-muted">
@@ -104,6 +107,29 @@ function ProductPage() {
         <Button className="h-14 w-full text-base" onClick={() => setTryOnOpen(true)}>
           <Sparkles className="size-5" /> Try It On
         </Button>
+        <Button
+          variant="secondary"
+          className="h-12 w-full text-base"
+          onClick={() => {
+            if (!shop) return;
+            addToCart(shop.id, {
+              productId: product.id,
+              name: product.product_name,
+              price: Number(product.selling_price),
+              photoUrl: product.photo_url,
+            });
+            toast.success("Added to your bag");
+          }}
+        >
+          <ShoppingBag className="size-5" /> Add to bag
+        </Button>
+        {count > 0 && shop && (
+          <Button asChild className="h-12 w-full text-base">
+            <Link to="/checkout/$shopId" params={{ shopId: shop.id }}>
+              Go to checkout ({count})
+            </Link>
+          </Button>
+        )}
         <Button asChild variant="outline" className="h-12 w-full text-base">
           <a
             href={whatsappLink(

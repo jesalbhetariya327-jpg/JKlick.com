@@ -6,6 +6,7 @@ import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { getAdminAnalytics } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatINR } from "@/lib/catalog";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -77,6 +78,8 @@ function AdminPage() {
           <Stat label="Unique shoppers" value={String(data.totalClients)} />
           <Stat label="Owner logins" value={String(data.totalLogins)} />
           <Stat label="AI time used" value={fmtSeconds(data.totalSeconds)} />
+          <Stat label="Orders placed" value={String(data.totalOrders)} />
+          <Stat label="Order value" value={formatINR(data.totalOrderValue)} />
         </div>
       </header>
 
@@ -107,6 +110,8 @@ function AdminPage() {
                 <Metric label="Logins" value={String(row.logins)} />
                 <Metric label="AI time" value={fmtSeconds(row.totalSeconds)} />
                 <Metric label="Avg / try-on" value={`${row.avgSeconds}s`} />
+                <Metric label="Orders" value={String(row.orders)} />
+                <Metric label="Order value" value={formatINR(row.orderValue)} />
               </div>
 
               <div className="space-y-0.5 text-xs text-muted-foreground">

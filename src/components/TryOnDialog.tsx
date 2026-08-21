@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Loader2, Share2, Sparkles, Upload } from "lucide-react";
+import { Download, Heart, Loader2, Share2, Sparkles, Upload } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { generateTryOn } from "@/lib/tryon.functions";
+import { saveTryOn } from "@/lib/customer.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { getShopperSessionId, whatsappLink, type Product, type Shop } from "@/lib/catalog";
 import {
   addLook,
@@ -33,6 +36,39 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
   const [loading, setLoading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [sharing, setSharing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedLook, setSavedLook] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const persist = useServerFn(saveTryOn);
+
+  useEffect(() => {
+    if (!open) return;
+    void supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user));
+  }, [open]);
+
+  useEffect(() => {
+    setSavedLook(false);
+  }, [result]);
+
+  const saveToAccount = async () => {
+    if (!result) return;
+    setSaving(true);
+    const res = await persist({
+      data: {
+        productId: product.id,
+        shopId: shop?.id ?? null,
+        productName: product.product_name,
+        image: result,
+      },
+    });
+    setSaving(false);
+    if ("error" in res && res.error) {
+      toast.error(res.error);
+      return;
+    }
+    setSavedLook(true);
+    toast.success("Saved to your account");
+  };
 
   useEffect(() => {
     if (!loading) return;
@@ -185,6 +221,23 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
                 Try again
               </Button>
             </div>
+            {signedIn ? (
+              <Button
+                variant="outline"
+                className="h-12 w-full text-base"
+                disabled={saving || savedLook}
+                onClick={() => void saveToAccount()}
+              >
+                <Heart className="size-4" />
+                {savedLook ? "Saved to my account" : saving ? "Saving..." : "Save to my account"}
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="h-12 w-full text-base">
+                <Link to="/customer-login">
+                  <Heart className="size-4" /> Log in to save this look
+                </Link>
+              </Button>
+            )}
             <Button asChild className="h-12 w-full text-base">
               <a
                 href={whatsappLink(

@@ -24,7 +24,7 @@ export type Shop = {
   shop_name: string;
   slug: string;
   is_active: boolean;
-  
+  upi_id?: string | null;
   whatsapp_number: string | null;
   created_at: string;
 };

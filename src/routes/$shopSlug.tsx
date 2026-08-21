@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, Sparkles, Store } from "lucide-react";
+import { Search, ShoppingBag, Sparkles, Store } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, formatINR, type Product, type Shop } from "@/lib/catalog";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/ProductImage";
 import { OwnerLoginButton } from "@/components/OwnerLoginButton";
+import { CartBar } from "@/components/CartBar";
 
 export const Route = createFileRoute("/$shopSlug")({
   head: () => ({
@@ -87,7 +88,7 @@ function ShopStorefront() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background pb-32">
       <OwnerLoginButton />
       <header className="bg-royal px-4 pb-8 pt-6 text-primary-foreground">
         <p className="text-xs uppercase tracking-[0.2em] opacity-85">Virar Ethnic Stock</p>
@@ -95,6 +96,9 @@ function ShopStorefront() {
         {shop?.owner_name && <p className="mt-1 text-sm opacity-85">{shop.owner_name}</p>}
         <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1.5 text-xs backdrop-blur">
           <Sparkles className="size-3.5" /> AI try-on on every product
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-xs opacity-85">
+          <ShoppingBag className="size-3.5" /> Add outfits to your bag and pay by UPI
         </div>
       </header>
 
@@ -163,6 +167,8 @@ function ShopStorefront() {
           ))}
         </div>
       </main>
+
+      {shop && <CartBar shopId={shop.id} shopSlug={shop.slug} />}
     </div>
   );
 }

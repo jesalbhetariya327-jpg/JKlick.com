@@ -29,6 +29,75 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_tryons: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          image_path: string
+          product_id: string | null
+          product_name: string
+          shop_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          image_path: string
+          product_id?: string | null
+          product_name?: string
+          shop_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          image_path?: string
+          product_id?: string | null
+          product_name?: string
+          shop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_tryons_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_tryons_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          phone: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          phone?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       login_log: {
         Row: {
           created_at: string
@@ -51,6 +120,95 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "login_log_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          id: string
+          order_id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_id: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          payment_screenshot_path: string | null
+          shop_id: string
+          status: string
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_id: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          payment_screenshot_path?: string | null
+          shop_id: string
+          status?: string
+          total_amount?: number
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          payment_screenshot_path?: string | null
+          shop_id?: string
+          status?: string
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"
@@ -132,6 +290,7 @@ export type Database = {
           owner_name: string
           shop_name: string
           slug: string
+          upi_id: string | null
           user_id: string
           whatsapp_number: string | null
         }
@@ -143,6 +302,7 @@ export type Database = {
           owner_name: string
           shop_name: string
           slug?: string
+          upi_id?: string | null
           user_id: string
           whatsapp_number?: string | null
         }
@@ -154,6 +314,7 @@ export type Database = {
           owner_name?: string
           shop_name?: string
           slug?: string
+          upi_id?: string | null
           user_id?: string
           whatsapp_number?: string | null
         }

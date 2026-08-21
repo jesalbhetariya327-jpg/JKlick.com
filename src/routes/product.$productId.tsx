@@ -62,7 +62,7 @@ function ProductPage() {
     return <p className="p-6 text-center">This shop is currently unavailable.</p>;
 
   return (
-    <div className="min-h-screen bg-background pb-40">
+    <div className="min-h-screen bg-background pb-64">
       <OwnerLoginButton />
       <div className="relative">
         <div className="aspect-[3/4] w-full bg-muted">

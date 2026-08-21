@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   LogOut,
@@ -14,6 +14,8 @@ import {
   Copy,
   Check,
   ShieldCheck,
+  ClipboardList,
+  Wallet,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +67,8 @@ function Dashboard() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
   const [copied, setCopied] = useState(false);
+  const [upiId, setUpiId] = useState("");
+  const [savingUpi, setSavingUpi] = useState(false);
 
   const shopQuery = useQuery({
     queryKey: ["my-shop"],
@@ -73,14 +77,36 @@ function Dashboard() {
       if (!auth.user) return null;
       const { data } = await supabase
         .from("shops")
-        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
+        .select(
+          "id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at, upi_id",
+        )
         .eq("user_id", auth.user.id)
         .maybeSingle();
-      return (data as Shop | null) ?? null;
+      return (data as (Shop & { upi_id: string | null }) | null) ?? null;
     },
   });
 
   const shop = shopQuery.data ?? null;
+
+  useEffect(() => {
+    if (shop) setUpiId((v) => v || (shop.upi_id ?? ""));
+  }, [shop]);
+
+  const saveUpi = async () => {
+    if (!shop) return;
+    setSavingUpi(true);
+    const { error } = await supabase
+      .from("shops")
+      .update({ upi_id: upiId.trim() || null })
+      .eq("id", shop.id);
+    setSavingUpi(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("UPI ID saved");
+    void queryClient.invalidateQueries({ queryKey: ["my-shop"] });
+  };
 
   const adminQuery = useQuery({
     queryKey: ["is-admin"],
@@ -198,6 +224,13 @@ function Dashboard() {
           </div>
         )}
 
+        <Link
+          to="/shop-orders"
+          className="mt-4 mr-2 inline-flex items-center gap-1 rounded-full bg-background/15 px-3 py-1.5 text-sm backdrop-blur"
+        >
+          <ClipboardList className="size-4" /> Orders
+        </Link>
+
         {adminQuery.data && (
           <Link
             to="/admin"
@@ -240,6 +273,30 @@ function Dashboard() {
             >
               <ExternalLink className="size-4" /> Open my storefront
             </Link>
+          </div>
+        )}
+        {shop && (
+          <div className="mt-4 rounded-xl bg-background/15 p-3 backdrop-blur">
+            <p className="flex items-center gap-1 text-xs opacity-80">
+              <Wallet className="size-3.5" /> Your UPI ID (shoppers pay here)
+            </p>
+            <div className="mt-1 flex items-center gap-2">
+              <Input
+                className="h-10 flex-1 bg-background text-foreground"
+                placeholder="yourname@upi"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-10 shrink-0"
+                disabled={savingUpi}
+                onClick={() => void saveUpi()}
+              >
+                Save
+              </Button>
+            </div>
           </div>
         )}
       </header>

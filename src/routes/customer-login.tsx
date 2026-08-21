@@ -57,10 +57,19 @@ function CustomerLogin() {
   };
 
   const signUp = async () => {
-    if (!fullName.trim()) return toast.error("Enter your name");
-    if (!email.trim()) return toast.error("Enter your email address");
+    if (!fullName.trim()) {
+      toast.error("Enter your name");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Enter your email address");
+      return;
+    }
     const problem = firstPasswordProblem(password);
-    if (problem) return toast.error(problem);
+    if (problem) {
+      toast.error(problem);
+      return;
+    }
 
     setBusy(true);
     const { data, error } = await supabase.auth.signUp({
@@ -70,7 +79,8 @@ function CustomerLogin() {
     });
     if (error) {
       setBusy(false);
-      return toast.error(error.message);
+      toast.error(error.message);
+      return;
     }
     let session = data.session;
     if (!session) {
@@ -79,7 +89,8 @@ function CustomerLogin() {
     }
     if (!session) {
       setBusy(false);
-      return toast.error("Could not sign you in");
+      toast.error("Could not sign you in");
+      return;
     }
     await ensureProfile(session.user.id, email.trim());
     setBusy(false);
@@ -88,7 +99,10 @@ function CustomerLogin() {
   };
 
   const signIn = async () => {
-    if (!email.trim() || !password) return toast.error("Enter your email and password");
+    if (!email.trim() || !password) {
+      toast.error("Enter your email and password");
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
@@ -96,7 +110,8 @@ function CustomerLogin() {
     });
     if (error || !data.session) {
       setBusy(false);
-      return toast.error(error?.message ?? "Could not sign you in");
+      toast.error(error?.message ?? "Could not sign you in");
+      return;
     }
     await ensureProfile(data.session.user.id, email.trim());
     setBusy(false);

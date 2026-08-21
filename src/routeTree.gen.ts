@@ -19,6 +19,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedMyOrdersRouteImport } from './routes/_authenticated/my-orders'
+import { Route as AuthenticatedShopOrdersRouteImport } from './routes/_authenticated/shop-orders'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
 import { Route as AuthenticatedCheckoutShopIdRouteImport } from './routes/_authenticated/checkout.$shopId'
 
@@ -71,6 +72,11 @@ const AuthenticatedMyOrdersRoute = AuthenticatedMyOrdersRouteImport.update({
   path: '/my-orders',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedShopOrdersRoute = AuthenticatedShopOrdersRouteImport.update({
+  id: '/shop-orders',
+  path: '/shop-orders',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ProductProductIdRoute = ProductProductIdRouteImport.update({
   id: '/product/$productId',
   path: '/product/$productId',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-orders': typeof AuthenticatedMyOrdersRoute
+  '/shop-orders': typeof AuthenticatedShopOrdersRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/checkout/$shopId': typeof AuthenticatedCheckoutShopIdRoute
 }
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-orders': typeof AuthenticatedMyOrdersRoute
+  '/shop-orders': typeof AuthenticatedShopOrdersRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/checkout/$shopId': typeof AuthenticatedCheckoutShopIdRoute
 }
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/my-orders': typeof AuthenticatedMyOrdersRoute
+  '/_authenticated/shop-orders': typeof AuthenticatedShopOrdersRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/_authenticated/checkout/$shopId': typeof AuthenticatedCheckoutShopIdRoute
 }
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/my-orders'
+    | '/shop-orders'
     | '/product/$productId'
     | '/checkout/$shopId'
   fileRoutesByTo: FileRoutesByTo
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/my-orders'
+    | '/shop-orders'
     | '/product/$productId'
     | '/checkout/$shopId'
   id:
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/my-orders'
+    | '/_authenticated/shop-orders'
     | '/product/$productId'
     | '/_authenticated/checkout/$shopId'
   fileRoutesById: FileRoutesById
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMyOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/shop-orders': {
+      id: '/_authenticated/shop-orders'
+      path: '/shop-orders'
+      fullPath: '/shop-orders'
+      preLoaderRoute: typeof AuthenticatedShopOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/product/$productId': {
       id: '/product/$productId'
       path: '/product/$productId'
@@ -271,6 +290,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMyOrdersRoute: typeof AuthenticatedMyOrdersRoute
+  AuthenticatedShopOrdersRoute: typeof AuthenticatedShopOrdersRoute
   AuthenticatedCheckoutShopIdRoute: typeof AuthenticatedCheckoutShopIdRoute
 }
 
@@ -279,6 +299,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMyOrdersRoute: AuthenticatedMyOrdersRoute,
+  AuthenticatedShopOrdersRoute: AuthenticatedShopOrdersRoute,
   AuthenticatedCheckoutShopIdRoute: AuthenticatedCheckoutShopIdRoute,
 }
 

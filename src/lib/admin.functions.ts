@@ -16,6 +16,8 @@ export type ShopAnalytics = {
   /** Average AI generation time per try-on, in seconds. */
   avgSeconds: number;
   logins: number;
+  orders: number;
+  orderValue: number;
   lastLoginAt: string | null;
   lastTryOnAt: string | null;
 };
@@ -29,6 +31,8 @@ export type AdminAnalytics = {
   totalClients: number;
   totalLogins: number;
   totalSeconds: number;
+  totalOrders: number;
+  totalOrderValue: number;
   perShop: ShopAnalytics[];
 };
 
@@ -46,7 +50,7 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: shops }, { data: logs }, { data: logins }, { data: products }] =
+    const [{ data: shops }, { data: logs }, { data: logins }, { data: products }, { data: orders }] =
       await Promise.all([
         supabaseAdmin
           .from("shops")
@@ -55,6 +59,7 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
         supabaseAdmin.from("tryon_log").select("shop_id, session_id, duration_ms, created_at"),
         supabaseAdmin.from("login_log").select("shop_id, created_at"),
         supabaseAdmin.from("products").select("shop_id"),
+        supabaseAdmin.from("orders").select("shop_id, total_amount"),
       ]);
 
     type Agg = {
@@ -63,6 +68,8 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
       clients: Set<string>;
       logins: number;
       products: number;
+      orders: number;
+      orderValue: number;
       lastLoginAt: string | null;
       lastTryOnAt: string | null;
     };
@@ -73,6 +80,8 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
       clients: new Set(),
       logins: 0,
       products: 0,
+      orders: 0,
+      orderValue: 0,
       lastLoginAt: null,
       lastTryOnAt: null,
     });
@@ -110,6 +119,15 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
       at(row.shop_id).products += 1;
     }
 
+    let totalOrderValue = 0;
+    for (const row of orders ?? []) {
+      totalOrderValue += Number(row.total_amount ?? 0);
+      if (!row.shop_id) continue;
+      const entry = at(row.shop_id);
+      entry.orders += 1;
+      entry.orderValue += Number(row.total_amount ?? 0);
+    }
+
     const list = shops ?? [];
     const perShop: ShopAnalytics[] = list.map((s) => {
       const entry = agg.get(s.id) ?? blank();
@@ -126,6 +144,8 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
         totalSeconds: Math.round(seconds),
         avgSeconds: entry.tryOns ? Math.round((seconds / entry.tryOns) * 10) / 10 : 0,
         logins: entry.logins,
+        orders: entry.orders,
+        orderValue: Math.round(entry.orderValue),
         lastLoginAt: entry.lastLoginAt,
         lastTryOnAt: entry.lastTryOnAt,
       };
@@ -140,6 +160,8 @@ export const getAdminAnalytics = createServerFn({ method: "GET" })
       totalClients: allClients.size,
       totalLogins: logins?.length ?? 0,
       totalSeconds: Math.round(totalMs / 1000),
+      totalOrders: orders?.length ?? 0,
+      totalOrderValue: Math.round(totalOrderValue),
       perShop: perShop.sort((a, b) => b.tryOns - a.tryOns),
     };
   });

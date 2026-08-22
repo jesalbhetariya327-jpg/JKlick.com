@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Store } from "lucide-react";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
-import { requestPasswordOtp, verifyPasswordOtp } from "@/lib/account.functions";
+import { sendPasswordResetLink } from "@/lib/account.functions";
 import { notifyNewSignup } from "@/lib/notify.functions";
 import { recordLogin } from "@/lib/login-log";
 

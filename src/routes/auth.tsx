@@ -61,7 +61,7 @@ async function ensureShop(
   });
 }
 
-type ForgotStep = "identify" | "otp" | "password";
+type ForgotStep = "identify" | "sent";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -75,8 +75,6 @@ function AuthPage() {
 
   const [forgotStep, setForgotStep] = useState<ForgotStep>("identify");
   const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [sentTo, setSentTo] = useState("");
 
   useEffect(() => {

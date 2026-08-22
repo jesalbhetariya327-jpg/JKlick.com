@@ -45,17 +45,24 @@ function Checkout() {
 
   const shopQuery = useQuery({
     queryKey: ["checkout-shop", shopId],
-    queryFn: async (): Promise<(Shop & { upi_id: string | null }) | null> => {
+    queryFn: async (): Promise<Shop | null> => {
       const { data } = await supabase
         .from("shops")
-        .select(
-          "id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at, upi_id",
-        )
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
         .eq("id", shopId)
         .maybeSingle();
-      return (data as (Shop & { upi_id: string | null }) | null) ?? null;
+      return (data as Shop | null) ?? null;
     },
   });
+
+  const upiQuery = useQuery({
+    queryKey: ["checkout-shop-upi", shopId],
+    queryFn: async (): Promise<string | null> => {
+      const { data } = await supabase.rpc("get_shop_upi", { _shop_id: shopId });
+      return (data as string | null) ?? null;
+    },
+  });
+
 
   const profileQuery = useQuery({
     queryKey: ["my-customer-profile"],
@@ -221,9 +228,10 @@ function Checkout() {
             <p className="text-sm">
               After paying, take a screenshot of your payment confirmation and upload it below.
             </p>
-            {shop.upi_id ? (
+            {upiQuery.data ? (
               <Button asChild className="h-14 w-full text-base">
-                <a href={upiLink(shop.upi_id, shop.shop_name, total, `Order at ${shop.shop_name}`)}>
+                <a href={upiLink(upiQuery.data, shop.shop_name, total, `Order at ${shop.shop_name}`)}>
+
                   <Wallet className="size-5" /> Pay {formatINR(total)} via UPI
                 </a>
               </Button>

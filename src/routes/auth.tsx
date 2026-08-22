@@ -171,74 +171,28 @@ function AuthPage() {
     navigate({ to: "/dashboard", replace: true });
   };
 
-  const sendOtp = async () => {
+  const sendResetLink = async () => {
     if (identifier.trim().length < 3) {
       toast.error("Enter your email address or phone number");
       return;
     }
     setBusy(true);
-    const res = await requestPasswordOtp({ data: { identifier: identifier.trim() } });
+    const res = await sendPasswordResetLink({
+      data: {
+        identifier: identifier.trim(),
+        redirectTo: `${window.location.origin}/reset-password`,
+      },
+    });
     setBusy(false);
     if (!res.ok) {
       toast.error(res.message);
       return;
     }
     setSentTo(res.maskedEmail);
-    setForgotStep("otp");
-    toast.success("We sent a 6-digit code to your email");
+    setForgotStep("sent");
+    toast.success("Check your email for the reset link");
   };
 
-  const verifyOtp = async () => {
-    if (otp.trim().length !== 6) {
-      toast.error("Enter the 6-digit code from your email");
-      return;
-    }
-    setBusy(true);
-    const res = await verifyPasswordOtp({
-      data: { identifier: identifier.trim(), token: otp.trim() },
-    });
-    if (!res.ok) {
-      setBusy(false);
-      toast.error(res.message);
-      return;
-    }
-    const { error } = await supabase.auth.setSession({
-      access_token: res.access_token,
-      refresh_token: res.refresh_token,
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    setForgotStep("password");
-  };
-
-  const saveNewPassword = async () => {
-    const problem = firstPasswordProblem(newPassword);
-    if (problem) {
-      toast.error(problem);
-      return;
-    }
-    setBusy(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    if (userData.user) {
-      await ensureShop(userData.user, {
-        ownerName: "",
-        shopName: "",
-        whatsapp: "",
-        email: userData.user.email ?? "",
-      });
-    }
-    toast.success("Password updated");
-    navigate({ to: "/dashboard", replace: true });
-  };
 
   const heading =
     mode === "signup"

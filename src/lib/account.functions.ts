@@ -1,8 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const identifierSchema = z.object({ identifier: z.string().trim().min(3).max(255) });
-const verifySchema = identifierSchema.extend({ token: z.string().trim().length(6) });
+const identifierSchema = z.object({
+  identifier: z.string().trim().min(3).max(255),
+  redirectTo: z.string().trim().url().max(500),
+});
+
 
 function maskEmail(email: string) {
   const [name, domain] = email.split("@");
@@ -11,7 +14,7 @@ function maskEmail(email: string) {
   return `${head}${"*".repeat(Math.max(name.length - 2, 1))}@${domain}`;
 }
 
-/** Resolves an email or phone number to the shop owner's email address. */
+/** Resolves an email or phone number to the account's email address. */
 async function resolveEmail(identifier: string): Promise<string | null> {
   if (identifier.includes("@")) return identifier.toLowerCase();
   const digits = identifier.replace(/\D/g, "");
@@ -19,17 +22,26 @@ async function resolveEmail(identifier: string): Promise<string | null> {
   const last10 = digits.slice(-10);
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
+
+  const { data: shops } = await supabaseAdmin
     .from("shops")
     .select("email, whatsapp_number")
     .not("whatsapp_number", "is", null);
-  if (error || !data) return null;
-
-  const match = data.find(
+  const shopMatch = (shops ?? []).find(
     (row) => (row.whatsapp_number ?? "").replace(/\D/g, "").slice(-10) === last10,
   );
-  return match?.email?.toLowerCase() ?? null;
+  if (shopMatch?.email) return shopMatch.email.toLowerCase();
+
+  const { data: customers } = await supabaseAdmin
+    .from("customers")
+    .select("email, phone")
+    .not("phone", "is", null);
+  const customerMatch = (customers ?? []).find(
+    (row) => (row.phone ?? "").replace(/\D/g, "").slice(-10) === last10,
+  );
+  return customerMatch?.email?.toLowerCase() ?? null;
 }
+
 
 async function publishableClient() {
   const { createClient } = await import("@supabase/supabase-js");
@@ -40,41 +52,30 @@ async function publishableClient() {
   );
 }
 
-/** Sends a 6-digit email OTP to the account matching an email or phone number. */
-export const requestPasswordOtp = createServerFn({ method: "POST" })
+/** Emails a password reset link to the account matching an email or phone number. */
+export const sendPasswordResetLink = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => identifierSchema.parse(data))
   .handler(async ({ data }) => {
+    let target: URL;
+    try {
+      target = new URL(data.redirectTo);
+    } catch {
+      return { ok: false as const, message: "Invalid reset link target." };
+    }
+    if (target.pathname !== "/reset-password" || !["http:", "https:"].includes(target.protocol)) {
+      return { ok: false as const, message: "Invalid reset link target." };
+    }
+
     const email = await resolveEmail(data.identifier);
-    if (!email) return { ok: false as const, message: "No shop account found for that email or phone number." };
+    if (!email) {
+      return { ok: false as const, message: "No account found for that email or phone number." };
+    }
 
     const supabase = await publishableClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false },
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: target.toString(),
     });
     if (error) return { ok: false as const, message: error.message };
     return { ok: true as const, maskedEmail: maskEmail(email) };
   });
 
-/** Verifies the email OTP and returns session tokens for the client to adopt. */
-export const verifyPasswordOtp = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => verifySchema.parse(data))
-  .handler(async ({ data }) => {
-    const email = await resolveEmail(data.identifier);
-    if (!email) return { ok: false as const, message: "No shop account found for that email or phone number." };
-
-    const supabase = await publishableClient();
-    const { data: result, error } = await supabase.auth.verifyOtp({
-      email,
-      token: data.token,
-      type: "email",
-    });
-    if (error || !result.session) {
-      return { ok: false as const, message: error?.message ?? "That code is not valid." };
-    }
-    return {
-      ok: true as const,
-      access_token: result.session.access_token,
-      refresh_token: result.session.refresh_token,
-    };
-  });

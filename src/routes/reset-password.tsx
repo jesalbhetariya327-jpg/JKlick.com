@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,33 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState<"checking" | "ok" | "invalid">("checking");
+
+  useEffect(() => {
+    let active = true;
+
+    const check = async () => {
+      // Supabase may return either hash tokens or a PKCE ?code= param.
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code).catch(() => undefined);
+      }
+      const { data } = await supabase.auth.getSession();
+      if (!active) return;
+      setReady(data.session ? "ok" : "invalid");
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setReady("ok");
+    });
+    void check();
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
 
   const submit = async () => {
     const problem = firstPasswordProblem(password);
@@ -66,6 +93,21 @@ function ResetPasswordPage() {
         </div>
         <Card className="shadow-soft">
           <CardContent className="space-y-4 p-5">
+            {ready === "checking" && (
+              <p className="text-sm text-muted-foreground">Checking your reset link...</p>
+            )}
+            {ready === "invalid" && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  This reset link is invalid or has expired. Please request a new one.
+                </p>
+                <Button className="h-12 w-full" onClick={() => navigate({ to: "/auth" })}>
+                  Back to login
+                </Button>
+              </div>
+            )}
+            {ready === "ok" && (
+              <>
             <div className="space-y-2">
               <Label htmlFor="new-password">New password</Label>
               <Input
@@ -92,6 +134,8 @@ function ResetPasswordPage() {
             <Button className="h-12 w-full text-base" disabled={busy} onClick={() => void submit()}>
               {busy ? "Saving..." : "Update password"}
             </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

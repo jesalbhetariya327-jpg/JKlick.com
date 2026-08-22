@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Store } from "lucide-react";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
-import { requestPasswordOtp, verifyPasswordOtp } from "@/lib/account.functions";
+import { sendPasswordResetLink } from "@/lib/account.functions";
 import { notifyNewSignup } from "@/lib/notify.functions";
 import { recordLogin } from "@/lib/login-log";
 
@@ -61,7 +61,7 @@ async function ensureShop(
   });
 }
 
-type ForgotStep = "identify" | "otp" | "password";
+type ForgotStep = "identify" | "sent";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -75,8 +75,6 @@ function AuthPage() {
 
   const [forgotStep, setForgotStep] = useState<ForgotStep>("identify");
   const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [sentTo, setSentTo] = useState("");
 
   useEffect(() => {
@@ -171,74 +169,28 @@ function AuthPage() {
     navigate({ to: "/dashboard", replace: true });
   };
 
-  const sendOtp = async () => {
+  const sendResetLink = async () => {
     if (identifier.trim().length < 3) {
       toast.error("Enter your email address or phone number");
       return;
     }
     setBusy(true);
-    const res = await requestPasswordOtp({ data: { identifier: identifier.trim() } });
+    const res = await sendPasswordResetLink({
+      data: {
+        identifier: identifier.trim(),
+        redirectTo: `${window.location.origin}/reset-password`,
+      },
+    });
     setBusy(false);
     if (!res.ok) {
       toast.error(res.message);
       return;
     }
     setSentTo(res.maskedEmail);
-    setForgotStep("otp");
-    toast.success("We sent a 6-digit code to your email");
+    setForgotStep("sent");
+    toast.success("Check your email for the reset link");
   };
 
-  const verifyOtp = async () => {
-    if (otp.trim().length !== 6) {
-      toast.error("Enter the 6-digit code from your email");
-      return;
-    }
-    setBusy(true);
-    const res = await verifyPasswordOtp({
-      data: { identifier: identifier.trim(), token: otp.trim() },
-    });
-    if (!res.ok) {
-      setBusy(false);
-      toast.error(res.message);
-      return;
-    }
-    const { error } = await supabase.auth.setSession({
-      access_token: res.access_token,
-      refresh_token: res.refresh_token,
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    setForgotStep("password");
-  };
-
-  const saveNewPassword = async () => {
-    const problem = firstPasswordProblem(newPassword);
-    if (problem) {
-      toast.error(problem);
-      return;
-    }
-    setBusy(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    if (userData.user) {
-      await ensureShop(userData.user, {
-        ownerName: "",
-        shopName: "",
-        whatsapp: "",
-        email: userData.user.email ?? "",
-      });
-    }
-    toast.success("Password updated");
-    navigate({ to: "/dashboard", replace: true });
-  };
 
   const heading =
     mode === "signup"
@@ -265,10 +217,8 @@ function AuthPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "forgot"
               ? forgotStep === "identify"
-                ? "Enter your email or phone number — we'll email you a 6-digit code."
-                : forgotStep === "otp"
-                  ? `Enter the 6-digit code sent to ${sentTo}.`
-                  : "Choose a new password."
+                ? "Enter your email or phone number — we'll email you a password reset link."
+                : `Check your email and click the reset link to set a new password. We sent it to ${sentTo}.`
               : "Sign in with your email and password."}
           </p>
         </div>
@@ -277,7 +227,7 @@ function AuthPage() {
           <CardContent className="space-y-4 p-5">
             {mode === "forgot" ? (
               <>
-                {forgotStep === "identify" && (
+                {forgotStep === "identify" ? (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="identifier">Email or phone number</Label>
@@ -289,64 +239,31 @@ function AuthPage() {
                         className="h-12"
                       />
                       <p className="text-xs text-muted-foreground">
-                        The code always goes to your registered email, even if you enter your phone
-                        number.
+                        The reset link always goes to your registered email, even if you enter your
+                        phone number.
                       </p>
-                    </div>
-                    <Button className="h-12 w-full text-base" disabled={busy} onClick={() => void sendOtp()}>
-                      {busy ? "Please wait..." : "Send 6-digit code"}
-                    </Button>
-                  </>
-                )}
-
-                {forgotStep === "otp" && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="otp">6-digit code</Label>
-                      <Input
-                        id="otp"
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                        placeholder="123456"
-                        className="h-12 text-center text-lg tracking-[0.4em]"
-                      />
-                    </div>
-                    <Button className="h-12 w-full text-base" disabled={busy} onClick={() => void verifyOtp()}>
-                      {busy ? "Please wait..." : "Verify code"}
-                    </Button>
-                    <button
-                      type="button"
-                      className="w-full text-sm text-muted-foreground underline underline-offset-4"
-                      onClick={() => void sendOtp()}
-                    >
-                      Resend code
-                    </button>
-                  </>
-                )}
-
-                {forgotStep === "password" && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-pass">New password</Label>
-                      <Input
-                        id="new-pass"
-                        type="password"
-                        autoComplete="new-password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="h-12"
-                      />
-                      <PasswordChecklist value={newPassword} />
                     </div>
                     <Button
                       className="h-12 w-full text-base"
                       disabled={busy}
-                      onClick={() => void saveNewPassword()}
+                      onClick={() => void sendResetLink()}
                     >
-                      {busy ? "Saving..." : "Save password and continue"}
+                      {busy ? "Please wait..." : "Email me a reset link"}
                     </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-xl bg-secondary p-4 text-sm text-secondary-foreground">
+                      Check your email and click the reset link to set a new password. The link opens
+                      a page where you can choose your new password.
+                    </div>
+                    <button
+                      type="button"
+                      className="w-full text-sm text-muted-foreground underline underline-offset-4"
+                      onClick={() => void sendResetLink()}
+                    >
+                      Resend reset link
+                    </button>
                   </>
                 )}
 
@@ -356,12 +273,11 @@ function AuthPage() {
                   onClick={() => {
                     setMode("login");
                     setForgotStep("identify");
-                    setOtp("");
-                    setNewPassword("");
                   }}
                 >
                   Back to login
                 </button>
+
               </>
             ) : (
               <>

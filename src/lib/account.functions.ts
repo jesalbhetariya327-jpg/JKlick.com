@@ -14,7 +14,7 @@ function maskEmail(email: string) {
   return `${head}${"*".repeat(Math.max(name.length - 2, 1))}@${domain}`;
 }
 
-/** Resolves an email or phone number to the shop owner's email address. */
+/** Resolves an email or phone number to the account's email address. */
 async function resolveEmail(identifier: string): Promise<string | null> {
   if (identifier.includes("@")) return identifier.toLowerCase();
   const digits = identifier.replace(/\D/g, "");
@@ -22,17 +22,26 @@ async function resolveEmail(identifier: string): Promise<string | null> {
   const last10 = digits.slice(-10);
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
+
+  const { data: shops } = await supabaseAdmin
     .from("shops")
     .select("email, whatsapp_number")
     .not("whatsapp_number", "is", null);
-  if (error || !data) return null;
-
-  const match = data.find(
+  const shopMatch = (shops ?? []).find(
     (row) => (row.whatsapp_number ?? "").replace(/\D/g, "").slice(-10) === last10,
   );
-  return match?.email?.toLowerCase() ?? null;
+  if (shopMatch?.email) return shopMatch.email.toLowerCase();
+
+  const { data: customers } = await supabaseAdmin
+    .from("customers")
+    .select("email, phone")
+    .not("phone", "is", null);
+  const customerMatch = (customers ?? []).find(
+    (row) => (row.phone ?? "").replace(/\D/g, "").slice(-10) === last10,
+  );
+  return customerMatch?.email?.toLowerCase() ?? null;
 }
+
 
 async function publishableClient() {
   const { createClient } = await import("@supabase/supabase-js");

@@ -77,20 +77,28 @@ function Dashboard() {
       if (!auth.user) return null;
       const { data } = await supabase
         .from("shops")
-        .select(
-          "id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at, upi_id",
-        )
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
         .eq("user_id", auth.user.id)
         .maybeSingle();
-      return (data as (Shop & { upi_id: string | null }) | null) ?? null;
+      return (data as Shop | null) ?? null;
     },
   });
 
   const shop = shopQuery.data ?? null;
 
+  const upiQuery = useQuery({
+    queryKey: ["my-shop-upi", shop?.id],
+    enabled: !!shop?.id,
+    queryFn: async (): Promise<string | null> => {
+      const { data } = await supabase.rpc("get_shop_upi", { _shop_id: shop!.id });
+      return (data as string | null) ?? null;
+    },
+  });
+
   useEffect(() => {
-    if (shop) setUpiId((v) => v || (shop.upi_id ?? ""));
-  }, [shop]);
+    if (upiQuery.data) setUpiId((v) => v || upiQuery.data || "");
+  }, [upiQuery.data]);
+
 
   const saveUpi = async () => {
     if (!shop) return;

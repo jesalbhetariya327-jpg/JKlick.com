@@ -111,7 +111,7 @@ function ShopStorefront() {
   }
 
   return (
-    <CustomerAuthGate shopName={shop?.shop_name}>
+    <CustomerAuthGate shopName={shop?.shop_name ?? null}>
     <div className="min-h-screen bg-background pb-32">
       <OwnerLoginButton />
       <header className="bg-royal px-4 pb-8 pt-6 text-primary-foreground">

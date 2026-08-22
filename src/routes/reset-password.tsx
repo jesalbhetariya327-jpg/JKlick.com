@@ -33,6 +33,33 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState<"checking" | "ok" | "invalid">("checking");
+
+  useEffect(() => {
+    let active = true;
+
+    const check = async () => {
+      // Supabase may return either hash tokens or a PKCE ?code= param.
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code).catch(() => undefined);
+      }
+      const { data } = await supabase.auth.getSession();
+      if (!active) return;
+      setReady(data.session ? "ok" : "invalid");
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setReady("ok");
+    });
+    void check();
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
 
   const submit = async () => {
     const problem = firstPasswordProblem(password);

@@ -43,41 +43,30 @@ async function publishableClient() {
   );
 }
 
-/** Sends a 6-digit email OTP to the account matching an email or phone number. */
-export const requestPasswordOtp = createServerFn({ method: "POST" })
+/** Emails a password reset link to the account matching an email or phone number. */
+export const sendPasswordResetLink = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => identifierSchema.parse(data))
   .handler(async ({ data }) => {
+    let target: URL;
+    try {
+      target = new URL(data.redirectTo);
+    } catch {
+      return { ok: false as const, message: "Invalid reset link target." };
+    }
+    if (target.pathname !== "/reset-password" || !["http:", "https:"].includes(target.protocol)) {
+      return { ok: false as const, message: "Invalid reset link target." };
+    }
+
     const email = await resolveEmail(data.identifier);
-    if (!email) return { ok: false as const, message: "No shop account found for that email or phone number." };
+    if (!email) {
+      return { ok: false as const, message: "No account found for that email or phone number." };
+    }
 
     const supabase = await publishableClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false },
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: target.toString(),
     });
     if (error) return { ok: false as const, message: error.message };
     return { ok: true as const, maskedEmail: maskEmail(email) };
   });
 
-/** Verifies the email OTP and returns session tokens for the client to adopt. */
-export const verifyPasswordOtp = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => verifySchema.parse(data))
-  .handler(async ({ data }) => {
-    const email = await resolveEmail(data.identifier);
-    if (!email) return { ok: false as const, message: "No shop account found for that email or phone number." };
-
-    const supabase = await publishableClient();
-    const { data: result, error } = await supabase.auth.verifyOtp({
-      email,
-      token: data.token,
-      type: "email",
-    });
-    if (error || !result.session) {
-      return { ok: false as const, message: error?.message ?? "That code is not valid." };
-    }
-    return {
-      ok: true as const,
-      access_token: result.session.access_token,
-      refresh_token: result.session.refresh_token,
-    };
-  });

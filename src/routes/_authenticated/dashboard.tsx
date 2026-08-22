@@ -141,10 +141,11 @@ function Dashboard() {
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
     return products.filter((p) => {
-      const matchesCategory = category === "All" || p.category === category;
+      // A search term searches the whole inventory, ignoring the active category tab.
+      const matchesCategory = term.length > 0 || category === "All" || p.category === category;
       const matchesSearch =
         !term ||
-        [p.product_name, p.sku, p.color, p.fabric, p.subcategory]
+        [p.product_name, p.sku, p.color, p.fabric, p.subcategory, p.category, p.size, p.notes]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(term));
       return matchesCategory && matchesSearch;

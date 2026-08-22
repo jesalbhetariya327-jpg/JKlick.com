@@ -12,6 +12,7 @@ import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 import { addToCart, useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { CustomerAuthGate } from "@/components/CustomerAuthGate";
 
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
@@ -62,6 +63,7 @@ function ProductPage() {
     return <p className="p-6 text-center">This shop is currently unavailable.</p>;
 
   return (
+    <CustomerAuthGate shopName={shop?.shop_name}>
     <div className="min-h-screen bg-background pb-64">
       <OwnerLoginButton />
       <div className="relative">
@@ -146,5 +148,6 @@ function ProductPage() {
 
       <TryOnDialog open={tryOnOpen} onOpenChange={setTryOnOpen} product={product} shop={shop} />
     </div>
+    </CustomerAuthGate>
   );
 }

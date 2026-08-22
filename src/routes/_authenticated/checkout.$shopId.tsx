@@ -45,17 +45,24 @@ function Checkout() {
 
   const shopQuery = useQuery({
     queryKey: ["checkout-shop", shopId],
-    queryFn: async (): Promise<(Shop & { upi_id: string | null }) | null> => {
+    queryFn: async (): Promise<Shop | null> => {
       const { data } = await supabase
         .from("shops")
-        .select(
-          "id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at, upi_id",
-        )
+        .select("id, user_id, owner_name, shop_name, whatsapp_number, slug, is_active, created_at")
         .eq("id", shopId)
         .maybeSingle();
-      return (data as (Shop & { upi_id: string | null }) | null) ?? null;
+      return (data as Shop | null) ?? null;
     },
   });
+
+  const upiQuery = useQuery({
+    queryKey: ["checkout-shop-upi", shopId],
+    queryFn: async (): Promise<string | null> => {
+      const { data } = await supabase.rpc("get_shop_upi", { _shop_id: shopId });
+      return (data as string | null) ?? null;
+    },
+  });
+
 
   const profileQuery = useQuery({
     queryKey: ["my-customer-profile"],

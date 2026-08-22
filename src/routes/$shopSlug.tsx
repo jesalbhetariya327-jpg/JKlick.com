@@ -10,21 +10,44 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/ProductImage";
 import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 import { CartBar } from "@/components/CartBar";
+import { CustomerAuthGate } from "@/components/CustomerAuthGate";
 
 export const Route = createFileRoute("/$shopSlug")({
-  head: () => ({
-    meta: [
-      { title: "Shop storefront | Virar Ethnic Stock" },
-      {
-        name: "description",
-        content: "Browse this shop's women's and girls' ethnic wear and try outfits on with AI.",
-      },
-      { property: "og:title", content: "Shop storefront | Virar Ethnic Stock" },
-      { property: "og:description", content: "Ethnic wear collection with AI try-on." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: async ({ params }) => {
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("shop_name, owner_name, is_active")
+      .eq("slug", params.shopSlug)
+      .maybeSingle();
+    if (!shop || !shop.is_active) return { shopName: null as string | null, categories: [] as string[] };
+    const { data: rows } = await supabase
+      .from("products")
+      .select("category, shops!inner(slug)")
+      .eq("shops.slug", params.shopSlug)
+      .gt("quantity", 0);
+    const categories = Array.from(new Set((rows ?? []).map((r) => r.category))).slice(0, 6);
+    return { shopName: shop.shop_name as string, categories };
+  },
+  head: ({ loaderData }) => {
+    const shopName = loaderData?.shopName ?? "Ethnic wear shop";
+    const cats = loaderData?.categories?.length
+      ? loaderData.categories.join(", ")
+      : "Patiala suits, churidars, lehengas, kurtis and sarees";
+    const title = `${shopName} | Ethnic Wear Collection with AI Try-On`;
+    const description = `Browse ${shopName}'s women's and girls' ethnic wear — ${cats}. Try outfits on with AI and order online with UPI payment.`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:image", content: "https://virar-style-magic.lovable.app/apple-touch-icon.png" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: "https://virar-style-magic.lovable.app/apple-touch-icon.png" },
+      ],
+    };
+  },
   component: ShopStorefront,
   errorComponent: () => <p className="p-6 text-center">This shop could not be loaded.</p>,
   notFoundComponent: () => <p className="p-6 text-center">Shop not found.</p>,
@@ -88,6 +111,7 @@ function ShopStorefront() {
   }
 
   return (
+    <CustomerAuthGate shopName={shop?.shop_name}>
     <div className="min-h-screen bg-background pb-32">
       <OwnerLoginButton />
       <header className="bg-royal px-4 pb-8 pt-6 text-primary-foreground">
@@ -170,5 +194,6 @@ function ShopStorefront() {
 
       {shop && <CartBar shopId={shop.id} shopSlug={shop.slug} />}
     </div>
+    </CustomerAuthGate>
   );
 }

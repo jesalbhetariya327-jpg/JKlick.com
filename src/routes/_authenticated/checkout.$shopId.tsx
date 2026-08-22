@@ -228,9 +228,10 @@ function Checkout() {
             <p className="text-sm">
               After paying, take a screenshot of your payment confirmation and upload it below.
             </p>
-            {shop.upi_id ? (
+            {upiQuery.data ? (
               <Button asChild className="h-14 w-full text-base">
-                <a href={upiLink(shop.upi_id, shop.shop_name, total, `Order at ${shop.shop_name}`)}>
+                <a href={upiLink(upiQuery.data, shop.shop_name, total, `Order at ${shop.shop_name}`)}>
+
                   <Wallet className="size-5" /> Pay {formatINR(total)} via UPI
                 </a>
               </Button>

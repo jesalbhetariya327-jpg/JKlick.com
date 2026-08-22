@@ -113,7 +113,8 @@ function Dashboard() {
       return;
     }
     toast.success("UPI ID saved");
-    void queryClient.invalidateQueries({ queryKey: ["my-shop"] });
+    void queryClient.invalidateQueries({ queryKey: ["my-shop-upi"] });
+
   };
 
   const adminQuery = useQuery({

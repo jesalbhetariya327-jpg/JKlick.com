@@ -1,8 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const identifierSchema = z.object({ identifier: z.string().trim().min(3).max(255) });
-const verifySchema = identifierSchema.extend({ token: z.string().trim().length(6) });
+const identifierSchema = z.object({
+  identifier: z.string().trim().min(3).max(255),
+  redirectTo: z.string().trim().url().max(500),
+});
+
 
 function maskEmail(email: string) {
   const [name, domain] = email.split("@");

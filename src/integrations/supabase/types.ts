@@ -440,7 +440,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_shop_upi: { Args: { _shop_id: string }; Returns: string }
       shop_slugify: { Args: { _name: string }; Returns: string }
     }
     Enums: {

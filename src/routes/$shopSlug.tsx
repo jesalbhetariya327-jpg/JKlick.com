@@ -81,18 +81,43 @@ function ShopStorefront() {
   const shop = data?.shop ?? null;
   const products = useMemo(() => data?.products ?? [], [data]);
 
+  const colors = useMemo(
+    () => Array.from(new Set(products.map((p) => p.color).filter(Boolean) as string[])).sort(),
+    [products],
+  );
+  const sizes = useMemo(
+    () => Array.from(new Set(products.map((p) => p.size).filter(Boolean) as string[])).sort(),
+    [products],
+  );
+  const maxPrice = useMemo(
+    () => products.reduce((m, p) => Math.max(m, Number(p.selling_price)), 0),
+    [products],
+  );
+
+  const filtersActive =
+    !!color || !!size || minPrice.trim() !== "" || maxPriceInput.trim() !== "";
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
+    const lo = minPrice.trim() === "" ? 0 : Number(minPrice);
+    const hi = maxPriceInput.trim() === "" ? Infinity : Number(maxPriceInput);
     return products.filter((p) => {
-      const matchesCategory = category === "All" || p.category === category;
+      // Search or a filter looks across the whole catalog, ignoring the active category tab.
+      const matchesCategory =
+        term.length > 0 || filtersActive || category === "All" || p.category === category;
       const matchesSearch =
         !term ||
-        [p.product_name, p.color, p.fabric, p.subcategory]
+        [p.product_name, p.sku, p.color, p.fabric, p.subcategory, p.category, p.size]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(term));
-      return matchesCategory && matchesSearch;
+      const price = Number(p.selling_price);
+      const matchesPrice = price >= (Number.isFinite(lo) ? lo : 0) && price <= (Number.isFinite(hi) ? hi : Infinity);
+      const matchesColor = !color || p.color === color;
+      const matchesSize = !size || p.size === size;
+      return matchesCategory && matchesSearch && matchesPrice && matchesColor && matchesSize;
     });
-  }, [products, category, search]);
+  }, [products, category, search, color, size, minPrice, maxPriceInput, filtersActive]);
+
 
   if (!isLoading && shop && !shop.is_active) {
     return (

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, ShoppingBag, Sparkles, Store } from "lucide-react";
+import { Search, ShoppingBag, SlidersHorizontal, Sparkles, Store, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, formatINR, type Product, type Shop } from "@/lib/catalog";
@@ -57,6 +57,12 @@ function ShopStorefront() {
   const { shopSlug } = Route.useParams();
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["shop-storefront", shopSlug],
@@ -81,18 +87,43 @@ function ShopStorefront() {
   const shop = data?.shop ?? null;
   const products = useMemo(() => data?.products ?? [], [data]);
 
+  const colors = useMemo(
+    () => Array.from(new Set(products.map((p) => p.color).filter(Boolean) as string[])).sort(),
+    [products],
+  );
+  const sizes = useMemo(
+    () => Array.from(new Set(products.map((p) => p.size).filter(Boolean) as string[])).sort(),
+    [products],
+  );
+  const maxPrice = useMemo(
+    () => products.reduce((m, p) => Math.max(m, Number(p.selling_price)), 0),
+    [products],
+  );
+
+  const filtersActive =
+    !!color || !!size || minPrice.trim() !== "" || maxPriceInput.trim() !== "";
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
+    const lo = minPrice.trim() === "" ? 0 : Number(minPrice);
+    const hi = maxPriceInput.trim() === "" ? Infinity : Number(maxPriceInput);
     return products.filter((p) => {
-      const matchesCategory = category === "All" || p.category === category;
+      // Search or a filter looks across the whole catalog, ignoring the active category tab.
+      const matchesCategory =
+        term.length > 0 || filtersActive || category === "All" || p.category === category;
       const matchesSearch =
         !term ||
-        [p.product_name, p.color, p.fabric, p.subcategory]
+        [p.product_name, p.sku, p.color, p.fabric, p.subcategory, p.category, p.size]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(term));
-      return matchesCategory && matchesSearch;
+      const price = Number(p.selling_price);
+      const matchesPrice = price >= (Number.isFinite(lo) ? lo : 0) && price <= (Number.isFinite(hi) ? hi : Infinity);
+      const matchesColor = !color || p.color === color;
+      const matchesSize = !size || p.size === size;
+      return matchesCategory && matchesSearch && matchesPrice && matchesColor && matchesSize;
     });
-  }, [products, category, search]);
+  }, [products, category, search, color, size, minPrice, maxPriceInput, filtersActive]);
+
 
   if (!isLoading && shop && !shop.is_active) {
     return (
@@ -111,7 +142,7 @@ function ShopStorefront() {
   }
 
   return (
-    <CustomerAuthGate shopName={shop?.shop_name ?? null}>
+    <CustomerAuthGate shopId={shop?.id ?? null} shopName={shop?.shop_name ?? null}>
     <div className="min-h-screen bg-background pb-32">
       <OwnerLoginButton />
       <header className="bg-royal px-4 pb-8 pt-6 text-primary-foreground">
@@ -136,6 +167,100 @@ function ShopStorefront() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium ${
+              filtersActive ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+            }`}
+          >
+            <SlidersHorizontal className="size-4" /> Filters
+          </button>
+          {filtersActive && (
+            <button
+              type="button"
+              onClick={() => {
+                setColor("");
+                setSize("");
+                setMinPrice("");
+                setMaxPriceInput("");
+              }}
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+            >
+              <X className="size-3.5" /> Clear filters
+            </button>
+          )}
+        </div>
+
+        {filtersOpen && (
+          <div className="space-y-3 rounded-xl border border-border bg-card p-3">
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Price range (₹)</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  className="h-10"
+                  inputMode="numeric"
+                  placeholder="Min"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ""))}
+                />
+                <span className="text-muted-foreground">–</span>
+                <Input
+                  className="h-10"
+                  inputMode="numeric"
+                  placeholder={maxPrice ? String(Math.round(maxPrice)) : "Max"}
+                  value={maxPriceInput}
+                  onChange={(e) => setMaxPriceInput(e.target.value.replace(/[^0-9]/g, ""))}
+                />
+              </div>
+            </div>
+
+            {colors.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Colour</p>
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setColor(color === c ? "" : c)}
+                      className={`rounded-full px-3 py-1.5 text-sm ${
+                        color === c
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sizes.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Size</p>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSize(size === s ? "" : s)}
+                      className={`rounded-full px-3 py-1.5 text-sm ${
+                        size === s
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {["All", ...CATEGORIES].map((c) => (
             <button

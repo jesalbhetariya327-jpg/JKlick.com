@@ -95,6 +95,16 @@ function ShopOrders() {
               </ul>
               <p className="text-right font-bold text-primary">{formatINR(order.totalAmount)}</p>
 
+              <div className="rounded-xl bg-secondary p-3 text-sm text-secondary-foreground">
+                <p className="font-semibold">
+                  {order.paymentMethod === "cod" ? "Cash on Delivery" : "Paid online via UPI"}
+                </p>
+                {order.deliveryAddress && (
+                  <p className="mt-1 whitespace-pre-wrap">{order.deliveryAddress}</p>
+                )}
+              </div>
+
+
               {order.screenshotUrl && (
                 <div>
                   <p className="mb-1 text-xs font-semibold text-muted-foreground">

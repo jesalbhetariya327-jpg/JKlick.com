@@ -79,7 +79,17 @@ function CustomerLogin() {
     });
     if (error) {
       setBusy(false);
-      toast.error(error.message);
+      toast.error(
+        /already/i.test(error.message)
+          ? "This email is already registered. Log in instead, or use a different email."
+          : error.message,
+      );
+      return;
+    }
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      setBusy(false);
+      setMode("login");
+      toast.error("This email is already registered. Log in instead, or use a different email.");
       return;
     }
     let session = data.session;
@@ -133,7 +143,7 @@ function CustomerLogin() {
             {mode === "signup" ? "Create your shopper account" : "Shopper login"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            One account works across every shop — save try-ons and track your orders.
+            Your account is linked to the shop you signed up through — save try-ons and track your orders.
           </p>
         </div>
 

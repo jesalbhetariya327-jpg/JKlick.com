@@ -22,7 +22,10 @@ export type OrderView = {
   customerPhone: string | null;
   customerEmail: string | null;
   screenshotUrl: string | null;
+  paymentMethod: "upi" | "cod";
+  deliveryAddress: string;
   items: OrderItemView[];
+
 };
 
 function decodeDataUrl(value: string) {
@@ -39,20 +42,25 @@ const createSchema = z.object({
     .max(50),
   customerName: z.string().trim().min(1).max(120),
   customerPhone: z.string().trim().max(40).nullable(),
+  deliveryAddress: z.string().trim().min(5).max(600),
+  paymentMethod: z.enum(["upi", "cod"]),
   screenshot: z
     .string()
     .min(100)
     .max(12_000_000)
-    .refine((v) => v.startsWith("data:image/"), "Upload an image screenshot"),
+    .refine((v) => v.startsWith("data:image/"), "Upload an image screenshot")
+    .nullable(),
 });
+
 
 /** Creates an order for the signed-in customer with a payment screenshot. */
 export const createOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => createSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const decoded = decodeDataUrl(data.screenshot);
-    if (!decoded) return { error: "Please upload a valid payment screenshot." };
+    const decoded = data.paymentMethod === "upi" ? decodeDataUrl(data.screenshot ?? "") : null;
+    if (data.paymentMethod === "upi" && !decoded)
+      return { error: "Please upload a valid payment screenshot." };
 
     // Prices always come from the database, never from the browser.
     const { data: products } = await context.supabase
@@ -83,12 +91,15 @@ export const createOrder = createServerFn({ method: "POST" })
     const total = items.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const ext = decoded.contentType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
-    const path = `${context.userId}/${crypto.randomUUID()}.${ext}`;
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from("payment-screenshots")
-      .upload(path, decoded.bytes, { contentType: decoded.contentType, upsert: false });
-    if (uploadError) return { error: "Could not upload your screenshot. Please try again." };
+    let path: string | null = null;
+    if (decoded) {
+      const ext = decoded.contentType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+      path = `${context.userId}/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from("payment-screenshots")
+        .upload(path, decoded.bytes, { contentType: decoded.contentType, upsert: false });
+      if (uploadError) return { error: "Could not upload your screenshot. Please try again." };
+    }
 
     const { data: order, error } = await context.supabase
       .from("orders")
@@ -97,6 +108,8 @@ export const createOrder = createServerFn({ method: "POST" })
         shop_id: data.shopId,
         total_amount: total,
         payment_screenshot_path: path,
+        payment_method: data.paymentMethod,
+        delivery_address: data.deliveryAddress,
         status: "requested",
         customer_name: data.customerName,
         customer_phone: data.customerPhone,
@@ -106,9 +119,10 @@ export const createOrder = createServerFn({ method: "POST" })
       .single();
 
     if (error || !order) {
-      await supabaseAdmin.storage.from("payment-screenshots").remove([path]);
+      if (path) await supabaseAdmin.storage.from("payment-screenshots").remove([path]);
       return { error: "Could not place your order. Please try again." };
     }
+
 
     const { error: itemsError } = await context.supabase
       .from("order_items")
@@ -137,6 +151,8 @@ type Row = {
   customer_phone: string | null;
   customer_email: string | null;
   payment_screenshot_path: string | null;
+  payment_method: string;
+  delivery_address: string;
 };
 
 async function hydrate(
@@ -179,6 +195,8 @@ async function hydrate(
     screenshotUrl: r.payment_screenshot_path
       ? (signedByPath.get(r.payment_screenshot_path) ?? null)
       : null,
+    paymentMethod: (r.payment_method === "cod" ? "cod" : "upi") as "upi" | "cod",
+    deliveryAddress: r.delivery_address ?? "",
     items: ((items ?? []) as { order_id: string; product_name: string; quantity: number; unit_price: number }[])
       .filter((i) => i.order_id === r.id)
       .map((i) => ({
@@ -196,7 +214,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("orders")
       .select(
-        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path",
+        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path, payment_method, delivery_address",
       )
       .eq("customer_id", context.userId)
       .order("created_at", { ascending: false });
@@ -229,7 +247,7 @@ export const listShopOrders = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("orders")
       .select(
-        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path",
+        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path, payment_method, delivery_address",
       )
       .eq("shop_id", shop.id)
       .order("created_at", { ascending: false });

@@ -11,11 +11,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
 
-/** Shows a sign up / log in card until the visitor has an account, then renders children. */
+/** Shows a sign up / log in card until the visitor has an account for THIS shop, then renders children. */
 export function CustomerAuthGate({
+  shopId,
   shopName,
   children,
 }: {
+  shopId?: string | null;
   shopName?: string | null;
   children: React.ReactNode;
 }) {
@@ -26,33 +28,72 @@ export function CustomerAuthGate({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [blocked, setBlocked] = useState<string | null>(null);
+
+  /** Confirms the signed-in account belongs to this shop; signs out and explains if not. */
+  const verifyShop = async (userId: string): Promise<boolean> => {
+    if (!shopId) return true;
+    const { data: profile } = await supabase
+      .from("customers")
+      .select("shop_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    // Shop owners / admins have no customer profile — let them through.
+    if (!profile) return true;
+    const ownShopId = (profile as { shop_id: string | null }).shop_id;
+    if (!ownShopId || ownShopId === shopId) return true;
+
+    const { data: ownShop } = await supabase
+      .from("shops")
+      .select("shop_name, slug")
+      .eq("id", ownShopId)
+      .maybeSingle();
+    const own = ownShop as { shop_name: string; slug: string } | null;
+    await supabase.auth.signOut();
+    setBlocked(
+      `This account isn't registered with ${shopName ?? "this shop"}. Please sign up here with a different email, or visit ${
+        own ? `${own.shop_name} (/${own.slug})` : "your own shop's link"
+      } to log in.`,
+    );
+    setStatus("out");
+    return false;
+  };
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (active) setStatus(data.session ? "in" : "out");
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setStatus(session ? "in" : "out");
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active) return;
+      if (!data.session) {
+        setStatus("out");
+        return;
+      }
+      const ok = await verifyShop(data.session.user.id);
+      if (active && ok) setStatus("in");
     });
     return () => {
       active = false;
-      sub.subscription.unsubscribe();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shopId]);
 
   const ensureProfile = async (userId: string, mail: string) => {
     const { data: existing } = await supabase
       .from("customers")
-      .select("user_id")
+      .select("user_id, shop_id")
       .eq("user_id", userId)
       .maybeSingle();
-    if (existing) return;
+    if (existing) {
+      if (shopId && !(existing as { shop_id: string | null }).shop_id) {
+        await supabase.from("customers").update({ shop_id: shopId }).eq("user_id", userId);
+      }
+      return;
+    }
     await supabase.from("customers").insert({
       user_id: userId,
       full_name: fullName.trim() || "Shopper",
       phone: phone.trim() || null,
       email: mail,
+      shop_id: shopId ?? null,
     });
   };
 
@@ -62,6 +103,7 @@ export function CustomerAuthGate({
       toast.error("Enter your email address");
       return;
     }
+    setBlocked(null);
     setBusy(true);
 
     if (mode === "signup") {
@@ -79,14 +121,18 @@ export function CustomerAuthGate({
           data: { full_name: fullName.trim(), account_type: "customer" },
         },
       });
+      const duplicate =
+        (error && /already/i.test(error.message)) ||
+        (!error && data.user && (data.user.identities?.length ?? 0) === 0);
+      if (duplicate) {
+        setBusy(false);
+        setMode("login");
+        toast.error("This email is already registered. Log in instead, or use a different email.");
+        return;
+      }
       if (error) {
         setBusy(false);
-        toast.error(
-          /already/i.test(error.message)
-            ? "This email is already registered. Please log in instead."
-            : error.message,
-        );
-        if (/already/i.test(error.message)) setMode("login");
+        toast.error(error.message);
         return;
       }
       let session = data.session;
@@ -101,6 +147,7 @@ export function CustomerAuthGate({
       }
       await ensureProfile(session.user.id, mail);
       setBusy(false);
+      setStatus("in");
       toast.success("Welcome!");
       return;
     }
@@ -111,9 +158,13 @@ export function CustomerAuthGate({
       toast.error(error?.message ?? "Could not sign you in");
       return;
     }
-    await ensureProfile(data.session.user.id, mail);
+    const ok = await verifyShop(data.session.user.id);
     setBusy(false);
+    if (!ok) return;
+    await ensureProfile(data.session.user.id, mail);
+    setStatus("in");
   };
+
 
   if (status === "loading") {
     return <p className="p-8 text-center text-sm text-muted-foreground">Loading...</p>;
@@ -137,6 +188,13 @@ export function CustomerAuthGate({
               : "Log in to browse the collection and continue shopping."}
           </p>
         </div>
+
+        {blocked && (
+          <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            {blocked}
+          </div>
+        )}
+
 
         <Card className="shadow-soft">
           <CardContent className="space-y-4 p-5">

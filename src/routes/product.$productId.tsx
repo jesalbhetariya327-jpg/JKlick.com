@@ -63,7 +63,7 @@ function ProductPage() {
     return <p className="p-6 text-center">This shop is currently unavailable.</p>;
 
   return (
-    <CustomerAuthGate shopName={shop?.shop_name ?? null}>
+    <CustomerAuthGate shopId={shop?.id ?? null} shopName={shop?.shop_name ?? null}>
     <div className="min-h-screen bg-background pb-64">
       <OwnerLoginButton />
       <div className="relative">

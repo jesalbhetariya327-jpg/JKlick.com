@@ -62,8 +62,7 @@ function Checkout() {
   const upiQuery = useQuery({
     queryKey: ["checkout-shop-upi", shopId],
     queryFn: async (): Promise<string | null> => {
-      const { data } = await supabase.rpc("get_shop_upi", { _shop_id: shopId });
-      return (data as string | null) ?? null;
+      return (await getShopUpi({ data: { shopId } })) ?? null;
     },
   });
 

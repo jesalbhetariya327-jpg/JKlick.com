@@ -80,6 +80,7 @@ export type Database = {
           email: string
           full_name: string
           phone: string | null
+          shop_id: string | null
           user_id: string
         }
         Insert: {
@@ -87,6 +88,7 @@ export type Database = {
           email?: string
           full_name?: string
           phone?: string | null
+          shop_id?: string | null
           user_id: string
         }
         Update: {
@@ -94,9 +96,18 @@ export type Database = {
           email?: string
           full_name?: string
           phone?: string | null
+          shop_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_log: {
         Row: {
@@ -176,7 +187,9 @@ export type Database = {
           customer_id: string
           customer_name: string
           customer_phone: string | null
+          delivery_address: string
           id: string
+          payment_method: string
           payment_screenshot_path: string | null
           shop_id: string
           status: string
@@ -188,7 +201,9 @@ export type Database = {
           customer_id: string
           customer_name?: string
           customer_phone?: string | null
+          delivery_address?: string
           id?: string
+          payment_method?: string
           payment_screenshot_path?: string | null
           shop_id: string
           status?: string
@@ -200,7 +215,9 @@ export type Database = {
           customer_id?: string
           customer_name?: string
           customer_phone?: string | null
+          delivery_address?: string
           id?: string
+          payment_method?: string
           payment_screenshot_path?: string | null
           shop_id?: string
           status?: string

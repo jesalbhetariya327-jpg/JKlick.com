@@ -3,15 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Minus, Plus, Upload, Wallet } from "lucide-react";
+import { ArrowLeft, Banknote, Minus, Plus, Upload, Wallet } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { formatINR, whatsappLink, type Shop } from "@/lib/catalog";
+import { formatINR, type Shop } from "@/lib/catalog";
 import { clearCart, setQty, upiLink, useCart } from "@/lib/cart";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/checkout/$shopId")({

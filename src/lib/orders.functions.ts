@@ -39,12 +39,16 @@ const createSchema = z.object({
     .max(50),
   customerName: z.string().trim().min(1).max(120),
   customerPhone: z.string().trim().max(40).nullable(),
+  deliveryAddress: z.string().trim().min(5).max(600),
+  paymentMethod: z.enum(["upi", "cod"]),
   screenshot: z
     .string()
     .min(100)
     .max(12_000_000)
-    .refine((v) => v.startsWith("data:image/"), "Upload an image screenshot"),
+    .refine((v) => v.startsWith("data:image/"), "Upload an image screenshot")
+    .nullable(),
 });
+
 
 /** Creates an order for the signed-in customer with a payment screenshot. */
 export const createOrder = createServerFn({ method: "POST" })

@@ -167,6 +167,100 @@ function ShopStorefront() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium ${
+              filtersActive ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+            }`}
+          >
+            <SlidersHorizontal className="size-4" /> Filters
+          </button>
+          {filtersActive && (
+            <button
+              type="button"
+              onClick={() => {
+                setColor("");
+                setSize("");
+                setMinPrice("");
+                setMaxPriceInput("");
+              }}
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+            >
+              <X className="size-3.5" /> Clear filters
+            </button>
+          )}
+        </div>
+
+        {filtersOpen && (
+          <div className="space-y-3 rounded-xl border border-border bg-card p-3">
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Price range (₹)</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  className="h-10"
+                  inputMode="numeric"
+                  placeholder="Min"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ""))}
+                />
+                <span className="text-muted-foreground">–</span>
+                <Input
+                  className="h-10"
+                  inputMode="numeric"
+                  placeholder={maxPrice ? String(Math.round(maxPrice)) : "Max"}
+                  value={maxPriceInput}
+                  onChange={(e) => setMaxPriceInput(e.target.value.replace(/[^0-9]/g, ""))}
+                />
+              </div>
+            </div>
+
+            {colors.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Colour</p>
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setColor(color === c ? "" : c)}
+                      className={`rounded-full px-3 py-1.5 text-sm ${
+                        color === c
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sizes.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Size</p>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSize(size === s ? "" : s)}
+                      className={`rounded-full px-3 py-1.5 text-sm ${
+                        size === s
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {["All", ...CATEGORIES].map((c) => (
             <button

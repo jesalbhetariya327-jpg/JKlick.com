@@ -57,6 +57,12 @@ function ShopStorefront() {
   const { shopSlug } = Route.useParams();
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["shop-storefront", shopSlug],

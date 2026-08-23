@@ -151,6 +151,8 @@ type Row = {
   customer_phone: string | null;
   customer_email: string | null;
   payment_screenshot_path: string | null;
+  payment_method: string;
+  delivery_address: string;
 };
 
 async function hydrate(
@@ -193,6 +195,8 @@ async function hydrate(
     screenshotUrl: r.payment_screenshot_path
       ? (signedByPath.get(r.payment_screenshot_path) ?? null)
       : null,
+    paymentMethod: (r.payment_method === "cod" ? "cod" : "upi") as "upi" | "cod",
+    deliveryAddress: r.delivery_address ?? "",
     items: ((items ?? []) as { order_id: string; product_name: string; quantity: number; unit_price: number }[])
       .filter((i) => i.order_id === r.id)
       .map((i) => ({
@@ -210,7 +214,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("orders")
       .select(
-        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path",
+        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path, payment_method, delivery_address",
       )
       .eq("customer_id", context.userId)
       .order("created_at", { ascending: false });
@@ -243,7 +247,7 @@ export const listShopOrders = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("orders")
       .select(
-        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path",
+        "id, shop_id, total_amount, status, created_at, customer_name, customer_phone, customer_email, payment_screenshot_path, payment_method, delivery_address",
       )
       .eq("shop_id", shop.id)
       .order("created_at", { ascending: false });

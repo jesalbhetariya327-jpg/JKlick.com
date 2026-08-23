@@ -22,7 +22,10 @@ export type OrderView = {
   customerPhone: string | null;
   customerEmail: string | null;
   screenshotUrl: string | null;
+  paymentMethod: "upi" | "cod";
+  deliveryAddress: string;
   items: OrderItemView[];
+
 };
 
 function decodeDataUrl(value: string) {

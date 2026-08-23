@@ -19,12 +19,12 @@ import { Card, CardContent } from "@/components/ui/card";
 export const Route = createFileRoute("/_authenticated/checkout/$shopId")({
   head: () => ({
     meta: [
-      { title: "Checkout | Virar Ethnic Stock" },
+      { title: "Checkout | JKlick" },
       {
         name: "description",
         content: "Review your ethnic wear order, pay by UPI and upload your payment screenshot.",
       },
-      { property: "og:title", content: "Checkout | Virar Ethnic Stock" },
+      { property: "og:title", content: "Checkout | JKlick" },
       { property: "og:description", content: "Pay by UPI and confirm your order." },
     ],
   }),

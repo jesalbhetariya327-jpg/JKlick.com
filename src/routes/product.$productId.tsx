@@ -17,12 +17,12 @@ import { CustomerAuthGate } from "@/components/CustomerAuthGate";
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
     meta: [
-      { title: "Outfit details | Virar Ethnic Stock" },
+      { title: "Outfit details | JKlick" },
       {
         name: "description",
         content: "See outfit photos, price, size and colour, then try it on with AI before buying.",
       },
-      { property: "og:title", content: "Outfit details | Virar Ethnic Stock" },
+      { property: "og:title", content: "Outfit details | JKlick" },
       { property: "og:description", content: "Try this ethnic outfit on with AI and buy on WhatsApp." },
     ],
   }),

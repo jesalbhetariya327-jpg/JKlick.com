@@ -133,7 +133,7 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
     setSharing(true);
     try {
       const blob =
-        (await watermarkLook(result, shop?.shop_name ?? "Virar Ethnic Stock", storefrontUrl)) ??
+        (await watermarkLook(result, shop?.shop_name ?? "JKlick", storefrontUrl)) ??
         (await (await fetch(result)).blob());
       const filename = `${product.product_name.replace(/\W+/g, "-").toLowerCase()}-tryon.jpg`;
       const file = new File([blob], filename, { type: blob.type || "image/jpeg" });

@@ -79,14 +79,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Virar Ethnic Stock" },
+      { title: "JKlick" },
       {
         name: "description",
         content:
-          "Browse women's and girls' ethnic wear from Virar shops, try outfits on with AI, and buy on WhatsApp.",
+          "Browse women's and girls' ethnic wear on JKlick, try outfits on with AI, and order online.",
       },
-      { name: "author", content: "Virar Ethnic Stock" },
-      { property: "og:title", content: "Virar Ethnic Stock" },
+      { name: "author", content: "JKlick" },
+      { property: "og:title", content: "JKlick" },
       {
         property: "og:description",
         content: "Ethnic wear storefront with AI try-on and shop inventory management.",
@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#7a1533" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "Virar Stock" },
+      { name: "apple-mobile-web-app-title", content: "JKlick" },
     ],
     links: [
       {

@@ -14,13 +14,13 @@ import { firstPasswordProblem } from "@/lib/password";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Set a New Password | Virar Ethnic Stock" },
+      { title: "Set a New Password | JKlick" },
       {
         name: "description",
-        content: "Choose a new password for your Virar Ethnic Stock shop owner account.",
+        content: "Choose a new password for your JKlick shop owner account.",
       },
-      { property: "og:title", content: "Set a New Password | Virar Ethnic Stock" },
-      { property: "og:description", content: "Complete your password reset for Virar Ethnic Stock." },
+      { property: "og:title", content: "Set a New Password | JKlick" },
+      { property: "og:description", content: "Complete your password reset for JKlick." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

@@ -23,12 +23,12 @@ import {
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
-      { title: "My saved try-ons | Virar Ethnic Stock" },
+      { title: "My saved try-ons | JKlick" },
       {
         name: "description",
-        content: "Your private saved AI try-on photos and shopper account for Virar Ethnic Stock.",
+        content: "Your private saved AI try-on photos and JKlick shopper account.",
       },
-      { property: "og:title", content: "My saved try-ons | Virar Ethnic Stock" },
+      { property: "og:title", content: "My saved try-ons | JKlick" },
       { property: "og:description", content: "Saved try-on photos, visible only to you." },
     ],
   }),

@@ -47,12 +47,12 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Stock Dashboard | Virar Ethnic Stock" },
+      { title: "Stock Dashboard | JKlick" },
       {
         name: "description",
-        content: "Manage ethnic wear inventory, stock levels and prices for your Virar garment shop.",
+        content: "Manage ethnic wear inventory, stock levels and prices for your JKlick shop.",
       },
-      { property: "og:title", content: "Stock Dashboard | Virar Ethnic Stock" },
+      { property: "og:title", content: "Stock Dashboard | JKlick" },
       { property: "og:description", content: "Add products, track stock and see your inventory value." },
     ],
   }),
@@ -219,7 +219,7 @@ function Dashboard() {
       <header className="bg-royal px-4 pb-6 pt-6 text-primary-foreground">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-widest opacity-80">Virar Ethnic Stock</p>
+            <p className="text-xs uppercase tracking-widest opacity-80">JKlick</p>
             <h1 className="text-2xl font-bold">{shop?.shop_name ?? "Your shop"}</h1>
             <p className="text-sm opacity-80">{shop?.owner_name}</p>
           </div>

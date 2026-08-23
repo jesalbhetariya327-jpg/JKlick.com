@@ -225,67 +225,111 @@ function Checkout() {
                 onChange={(e) => setPhone(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="caddr">Delivery address</Label>
+              <Textarea
+                id="caddr"
+                rows={3}
+                placeholder="House / flat, street, area, city, pincode"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-soft">
           <CardContent className="space-y-3 p-4">
-            <p className="text-sm">
-              After paying, take a screenshot of your payment confirmation and upload it below.
-            </p>
-            {upiQuery.data ? (
-              <Button asChild className="h-14 w-full text-base">
-                <a href={upiLink(upiQuery.data, shop.shop_name, total, `Order at ${shop.shop_name}`)}>
+            <h2 className="text-sm font-semibold text-muted-foreground">Payment method</h2>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPayMethod("cod")}
+                className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-sm font-medium ${
+                  payMethod === "cod" ? "border-primary bg-primary/10" : "border-border bg-card"
+                }`}
+              >
+                <Banknote className="size-5" /> Cash on Delivery
+              </button>
+              <button
+                type="button"
+                onClick={() => setPayMethod("upi")}
+                className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-sm font-medium ${
+                  payMethod === "upi" ? "border-primary bg-primary/10" : "border-border bg-card"
+                }`}
+              >
+                <Wallet className="size-5" /> Pay Online via UPI
+              </button>
+            </div>
 
-                  <Wallet className="size-5" /> Pay {formatINR(total)} via UPI
-                </a>
-              </Button>
-            ) : (
+            {payMethod === "cod" ? (
               <p className="rounded-xl bg-secondary p-3 text-sm text-secondary-foreground">
-                This shop hasn't added a UPI ID yet. Please contact them on WhatsApp to pay.
+                Pay in cash when your order is delivered.
               </p>
-            )}
+            ) : (
+              <>
+                <p className="text-sm">
+                  After paying, take a screenshot of your payment confirmation and upload it below.
+                </p>
+                {upiQuery.data ? (
+                  <Button asChild className="h-14 w-full text-base">
+                    <a href={upiLink(upiQuery.data, shop.shop_name, total, `Order at ${shop.shop_name}`)}>
+                      <Wallet className="size-5" /> Pay {formatINR(total)} via UPI
+                    </a>
+                  </Button>
+                ) : (
+                  <p className="rounded-xl bg-secondary p-3 text-sm text-secondary-foreground">
+                    This shop hasn't added a UPI ID yet. Please choose Cash on Delivery.
+                  </p>
+                )}
 
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex min-h-32 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-dashed border-border bg-muted p-2 text-sm text-muted-foreground"
-            >
-              {screenshot ? (
-                <img src={screenshot} alt="Payment screenshot" className="max-h-56 rounded-lg" />
-              ) : (
-                <>
-                  <Upload className="size-6" />
-                  Tap to upload payment screenshot
-                </>
-              )}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = "";
-                if (!file) return;
-                if (file.size > 8 * 1024 * 1024) {
-                  toast.error("Please choose an image under 8 MB");
-                  return;
-                }
-                void readFile(file).then(setScreenshot);
-              }}
-            />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex min-h-32 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-dashed border-border bg-muted p-2 text-sm text-muted-foreground"
+                >
+                  {screenshot ? (
+                    <img src={screenshot} alt="Payment screenshot" className="max-h-56 rounded-lg" />
+                  ) : (
+                    <>
+                      <Upload className="size-6" />
+                      Tap to upload payment screenshot
+                    </>
+                  )}
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    if (file.size > 8 * 1024 * 1024) {
+                      toast.error("Please choose an image under 8 MB");
+                      return;
+                    }
+                    void readFile(file).then(setScreenshot);
+                  }}
+                />
+              </>
+            )}
 
             <Button
               className="h-14 w-full text-base"
-              disabled={busy || !screenshot}
+              disabled={busy || (payMethod === "upi" && !screenshot)}
               onClick={() => void place()}
             >
-              {busy ? "Placing your order..." : "Submit order"}
+              {busy
+                ? "Placing your order..."
+                : payMethod === "cod"
+                  ? "Place order (Cash on Delivery)"
+                  : "Submit order"}
             </Button>
           </CardContent>
         </Card>
+
       </main>
     </div>
   );

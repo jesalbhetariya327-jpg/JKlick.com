@@ -11,12 +11,12 @@ import { formatINR } from "@/lib/catalog";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin analytics | Virar Ethnic Stock" },
+      { title: "Admin analytics | JKlick" },
       {
         name: "description",
         content: "Platform analytics: shop accounts, logins, shoppers and AI try-on usage per shop.",
       },
-      { property: "og:title", content: "Admin analytics | Virar Ethnic Stock" },
+      { property: "og:title", content: "Admin analytics | JKlick" },
       { property: "og:description", content: "Shop accounts, logins and try-on usage overview." },
     ],
   }),

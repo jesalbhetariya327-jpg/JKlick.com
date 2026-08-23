@@ -26,7 +26,7 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
     }
 
     const html = `
-      <h2>New shop signed up on Virar Ethnic Stock</h2>
+      <h2>New shop signed up on JKlick</h2>
       <ul>
         <li><strong>Shop name:</strong> ${escapeHtml(data.shopName)}</li>
         <li><strong>Owner name:</strong> ${escapeHtml(data.ownerName)}</li>

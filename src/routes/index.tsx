@@ -7,13 +7,13 @@ import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Virar Ethnic Stock | Shop links for ethnic wear stores" },
+      { title: "JKlick | Ethnic wear with AI try-on" },
       {
         name: "description",
         content:
-          "Virar Ethnic Stock gives each garment shop its own private storefront link with AI try-on. Open your shop's link to browse their collection.",
+          "JKlick gives each garment shop its own private storefront link with AI try-on. Open your shop's link to browse their collection.",
       },
-      { property: "og:title", content: "Virar Ethnic Stock" },
+      { property: "og:title", content: "JKlick" },
       {
         property: "og:description",
         content: "Each shop has its own private storefront link with AI try-on.",
@@ -32,7 +32,7 @@ function Landing() {
       <div className="flex size-16 items-center justify-center rounded-2xl bg-secondary">
         <Store className="size-8 text-primary" />
       </div>
-      <h1 className="text-2xl font-bold">Virar Ethnic Stock</h1>
+      <h1 className="text-2xl font-bold">JKlick</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
         Each shop has its own private storefront link. Please open the link shared by the shop you
         want to browse.

@@ -11,12 +11,12 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/_authenticated/my-orders")({
   head: () => ({
     meta: [
-      { title: "My orders | Virar Ethnic Stock" },
+      { title: "My orders | JKlick" },
       {
         name: "description",
         content: "Track the ethnic wear orders you placed and their current status.",
       },
-      { property: "og:title", content: "My orders | Virar Ethnic Stock" },
+      { property: "og:title", content: "My orders | JKlick" },
       { property: "og:description", content: "Your order history and current status." },
     ],
   }),

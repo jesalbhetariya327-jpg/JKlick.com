@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, UserRound } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,17 +10,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
+import jklickLogo from "@/assets/jklick-logo-lockup.jpg.asset.json";
 
 export const Route = createFileRoute("/customer-login")({
   head: () => ({
     meta: [
-      { title: "Customer Login | Virar Ethnic Stock" },
+      { title: "Customer Login | JKlick" },
       {
         name: "description",
         content:
           "Create a shopper account to save your AI try-on photos, order ethnic wear and pay by UPI.",
       },
-      { property: "og:title", content: "Customer Login | Virar Ethnic Stock" },
+      { property: "og:title", content: "Customer Login | JKlick" },
       {
         property: "og:description",
         content: "Save try-on photos and order from any shop with one account.",
@@ -134,12 +135,18 @@ function CustomerLogin() {
         <ArrowLeft className="size-4" /> Back
       </Link>
 
-      <div className="mx-auto mt-8 max-w-md">
+      <div className="mx-auto mt-5 max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-royal text-primary-foreground shadow-soft">
-            <UserRound className="size-7" />
-          </div>
-          <h1 className="mt-4 text-2xl font-bold">
+          <img
+            src={jklickLogo.url}
+            alt="JKlick — Virar ethnic wear"
+            className="mx-auto w-full max-w-sm border border-border object-contain shadow-soft"
+            decoding="async"
+          />
+          <p className="mt-4 font-display text-lg italic text-primary">
+            Infinite styles, infinite try-ons
+          </p>
+          <h1 className="mt-5 text-2xl font-bold">
             {mode === "signup" ? "Create your shopper account" : "Shopper login"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

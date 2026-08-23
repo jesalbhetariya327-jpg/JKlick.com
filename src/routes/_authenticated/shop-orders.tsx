@@ -14,12 +14,12 @@ import { statusTone } from "./my-orders";
 export const Route = createFileRoute("/_authenticated/shop-orders")({
   head: () => ({
     meta: [
-      { title: "Orders | Virar Ethnic Stock" },
+      { title: "Orders | JKlick" },
       {
         name: "description",
         content: "Incoming customer orders for your shop with payment screenshots and status.",
       },
-      { property: "og:title", content: "Orders | Virar Ethnic Stock" },
+      { property: "og:title", content: "Orders | JKlick" },
       { property: "og:description", content: "Manage incoming orders and payment proofs." },
     ],
   }),

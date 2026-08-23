@@ -146,7 +146,7 @@ function ShopStorefront() {
     <div className="min-h-screen bg-background pb-32">
       <OwnerLoginButton />
       <header className="bg-royal px-4 pb-8 pt-6 text-primary-foreground">
-        <p className="text-xs uppercase tracking-[0.2em] opacity-85">Virar Ethnic Stock</p>
+        <p className="text-xs uppercase tracking-[0.2em] opacity-85">JKlick</p>
         <h1 className="mt-2 text-3xl font-bold leading-tight">{shop?.shop_name ?? "Shop"}</h1>
         {shop?.owner_name && <p className="mt-1 text-sm opacity-85">{shop.owner_name}</p>}
         <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1.5 text-xs backdrop-blur">

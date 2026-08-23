@@ -1,3 +1,4 @@
+import { getShopUpi } from "@/lib/shop.functions";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -90,8 +91,7 @@ function Dashboard() {
     queryKey: ["my-shop-upi", shop?.id],
     enabled: !!shop?.id,
     queryFn: async (): Promise<string | null> => {
-      const { data } = await supabase.rpc("get_shop_upi", { _shop_id: shop!.id });
-      return (data as string | null) ?? null;
+      return (await getShopUpi({ data: { shopId: shop!.id } })) ?? null;
     },
   });
 

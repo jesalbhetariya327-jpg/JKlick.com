@@ -189,6 +189,13 @@ export function CustomerAuthGate({
           </p>
         </div>
 
+        {blocked && (
+          <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            {blocked}
+          </div>
+        )}
+
+
         <Card className="shadow-soft">
           <CardContent className="space-y-4 p-5">
             {mode === "signup" && (

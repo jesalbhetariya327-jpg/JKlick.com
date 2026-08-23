@@ -40,8 +40,11 @@ function Checkout() {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [payMethod, setPayMethod] = useState<"cod" | "upi">("cod");
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
 
   const shopQuery = useQuery({
     queryKey: ["checkout-shop", shopId],

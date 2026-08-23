@@ -104,7 +104,11 @@ function Checkout() {
       toast.error("Enter your name so the shop knows who ordered");
       return;
     }
-    if (!screenshot) {
+    if (address.trim().length < 5) {
+      toast.error("Enter your full delivery address");
+      return;
+    }
+    if (payMethod === "upi" && !screenshot) {
       toast.error("Upload your payment screenshot to submit the order");
       return;
     }
@@ -115,7 +119,9 @@ function Checkout() {
         items: items.map((i) => ({ productId: i.productId, quantity: i.qty })),
         customerName: name.trim(),
         customerPhone: phone.trim() || null,
-        screenshot,
+        deliveryAddress: address.trim(),
+        paymentMethod: payMethod,
+        screenshot: payMethod === "upi" ? screenshot : null,
       },
     });
     setBusy(false);
@@ -124,18 +130,14 @@ function Checkout() {
       return;
     }
     if ("ok" in res && res.ok) {
-      const summary = res.items
-        .map((i) => `• ${i.productName} × ${i.quantity} — ${formatINR(i.unitPrice * i.quantity)}`)
-        .join("\n");
-      const message = `New order from ${name.trim()}${phone.trim() ? ` (${phone.trim()})` : ""}\n\n${summary}\n\nTotal: ${formatINR(
-        res.total,
-      )}\n\nI've paid by UPI and uploaded the payment screenshot — please check the Orders section in your app dashboard to see it.`;
       clearCart(shopId);
-      window.open(whatsappLink(shop.whatsapp_number, message), "_blank");
-      toast.success("Order placed!");
+      toast.success(
+        payMethod === "cod" ? "Order placed! Pay in cash on delivery." : "Order placed!",
+      );
       navigate({ to: "/my-orders", replace: true });
     }
   };
+
 
   if (shopQuery.isLoading) return <p className="p-6 text-center text-muted-foreground">Loading...</p>;
   if (!shop) return <p className="p-6 text-center">This shop could not be found.</p>;

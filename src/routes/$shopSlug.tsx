@@ -28,8 +28,9 @@ export const Route = createFileRoute("/$shopSlug")({
     const categories = Array.from(new Set((rows ?? []).map((r) => r.category))).slice(0, 6);
     return { shopName: shop.shop_name as string, categories };
   },
-  head: ({ loaderData }) => {
+  head: ({ params, loaderData }) => {
     const shopName = loaderData?.shopName ?? "Ethnic wear shop";
+    const url = `https://virar-style-magic.lovable.app/${params.shopSlug}`;
     const cats = loaderData?.categories?.length
       ? loaderData.categories.join(", ")
       : "Patiala suits, churidars, lehengas, kurtis and sarees";
@@ -42,12 +43,29 @@ export const Route = createFileRoute("/$shopSlug")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
+        { property: "og:url", content: url },
         { property: "og:image", content: "https://virar-style-magic.lovable.app/apple-touch-icon.png" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:image", content: "https://virar-style-magic.lovable.app/apple-touch-icon.png" },
       ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Store",
+            name: shopName,
+            url,
+            description,
+            image: "https://virar-style-magic.lovable.app/apple-touch-icon.png",
+            address: { "@type": "PostalAddress", addressLocality: "Virar", addressCountry: "IN" },
+          }),
+        },
+      ],
     };
   },
+
   component: ShopStorefront,
   errorComponent: () => <p className="p-6 text-center">This shop could not be loaded.</p>,
   notFoundComponent: () => <p className="p-6 text-center">Shop not found.</p>,
@@ -162,10 +180,12 @@ function ShopStorefront() {
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="h-12 pl-9"
+            aria-label="Search outfits"
             placeholder="Search outfits..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
         </div>
 
         <div className="flex items-center gap-2">

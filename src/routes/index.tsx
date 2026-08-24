@@ -7,21 +7,24 @@ import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "JKlick | Ethnic wear with AI try-on" },
+      { title: "JKlick | Ethnic wear storefronts with AI try-on" },
       {
         name: "description",
         content:
           "JKlick gives each garment shop its own private storefront link with AI try-on. Open your shop's link to browse their collection.",
       },
-      { property: "og:title", content: "JKlick" },
+      { property: "og:title", content: "JKlick | Ethnic wear storefronts with AI try-on" },
       {
         property: "og:description",
         content: "Each shop has its own private storefront link with AI try-on.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://virar-style-magic.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://virar-style-magic.lovable.app/" }],
   }),
+
   component: Landing,
 });
 
@@ -32,7 +35,7 @@ function Landing() {
       <div className="flex size-16 items-center justify-center rounded-2xl bg-secondary">
         <Store className="size-8 text-primary" />
       </div>
-      <h1 className="text-2xl font-bold">JKlick</h1>
+      <h1 className="text-2xl font-bold">JKlick — Ethnic Wear Storefronts with AI Try-On</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
         Each shop has its own private storefront link. Please open the link shared by the shop you
         want to browse.

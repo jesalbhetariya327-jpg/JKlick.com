@@ -180,10 +180,12 @@ function ShopStorefront() {
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="h-12 pl-9"
+            aria-label="Search outfits"
             placeholder="Search outfits..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
         </div>
 
         <div className="flex items-center gap-2">

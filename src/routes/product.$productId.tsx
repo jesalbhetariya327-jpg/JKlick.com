@@ -15,21 +15,105 @@ import { Badge } from "@/components/ui/badge";
 import { CustomerAuthGate } from "@/components/CustomerAuthGate";
 
 export const Route = createFileRoute("/product/$productId")({
-  head: () => ({
-    meta: [
-      { title: "Outfit details | JKlick" },
-      {
-        name: "description",
-        content: "See outfit photos, price, size and colour, then try it on with AI before buying.",
-      },
-      { property: "og:title", content: "Outfit details | JKlick" },
-      { property: "og:description", content: "Try this ethnic outfit on with AI and buy on WhatsApp." },
-    ],
-  }),
+  loader: async ({ params }) => {
+    const { data: product } = await supabase
+      .from("products")
+      .select("product_name, category, color, fabric, size, selling_price, photo_url, shop_id")
+      .eq("id", params.productId)
+      .maybeSingle();
+    if (!product) return null;
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("shop_name, is_active")
+      .eq("id", product.shop_id)
+      .maybeSingle();
+    return {
+      name: product.product_name as string,
+      category: product.category as string,
+      color: (product.color as string | null) ?? null,
+      fabric: (product.fabric as string | null) ?? null,
+      size: (product.size as string | null) ?? null,
+      price: Number(product.selling_price),
+      image: typeof product.photo_url === "string" && product.photo_url.startsWith("https://")
+        ? (product.photo_url as string)
+        : null,
+      shopName: shop?.is_active ? (shop.shop_name as string) : null,
+    };
+  },
+  head: ({ params, loaderData }) => {
+    const url = `https://virar-style-magic.lovable.app/product/${params.productId}`;
+    if (!loaderData) {
+      return {
+        meta: [
+          { title: "Outfit details | JKlick" },
+          {
+            name: "description",
+            content:
+              "See outfit photos, price, size and colour, then try it on with AI before buying.",
+          },
+          { property: "og:title", content: "Outfit details | JKlick" },
+          { property: "og:url", content: url },
+          { property: "og:type", content: "product" },
+          { name: "twitter:card", content: "summary_large_image" },
+        ],
+        links: [{ rel: "canonical", href: url }],
+      };
+    }
+    const shopPart = loaderData.shopName ? ` at ${loaderData.shopName}` : "";
+    const title = `${loaderData.name} | JKlick`;
+    const details = [loaderData.color, loaderData.fabric, loaderData.size]
+      .filter(Boolean)
+      .join(", ");
+    const description = `${loaderData.name}${shopPart} — ${loaderData.category}${
+      details ? ` (${details})` : ""
+    } at ₹${Math.round(loaderData.price)}. Try it on with AI before you order.`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(loaderData.image
+          ? [
+              { property: "og:image", content: loaderData.image },
+              { name: "twitter:image", content: loaderData.image },
+            ]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: loaderData.name,
+            category: loaderData.category,
+            ...(loaderData.color ? { color: loaderData.color } : {}),
+            ...(loaderData.fabric ? { material: loaderData.fabric } : {}),
+            ...(loaderData.size ? { size: loaderData.size } : {}),
+            ...(loaderData.image ? { image: loaderData.image } : {}),
+            ...(loaderData.shopName ? { brand: { "@type": "Brand", name: loaderData.shopName } } : {}),
+            offers: {
+              "@type": "Offer",
+              price: loaderData.price,
+              priceCurrency: "INR",
+              url,
+              availability: "https://schema.org/InStock",
+            },
+          }),
+        },
+      ],
+    };
+  },
   component: ProductPage,
   errorComponent: () => <p className="p-6 text-center">This outfit could not be loaded.</p>,
   notFoundComponent: () => <p className="p-6 text-center">Outfit not found.</p>,
 });
+
 
 function ProductPage() {
   const { productId } = Route.useParams();

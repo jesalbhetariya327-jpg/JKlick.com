@@ -7,21 +7,24 @@ import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "JKlick | Ethnic wear with AI try-on" },
+      { title: "JKlick | Ethnic wear storefronts with AI try-on" },
       {
         name: "description",
         content:
           "JKlick gives each garment shop its own private storefront link with AI try-on. Open your shop's link to browse their collection.",
       },
-      { property: "og:title", content: "JKlick" },
+      { property: "og:title", content: "JKlick | Ethnic wear storefronts with AI try-on" },
       {
         property: "og:description",
         content: "Each shop has its own private storefront link with AI try-on.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://virar-style-magic.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://virar-style-magic.lovable.app/" }],
   }),
+
   component: Landing,
 });
 

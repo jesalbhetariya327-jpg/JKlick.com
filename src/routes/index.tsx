@@ -32,7 +32,7 @@ function Landing() {
       <div className="flex size-16 items-center justify-center rounded-2xl bg-secondary">
         <Store className="size-8 text-primary" />
       </div>
-      <h1 className="text-2xl font-bold">JKlick</h1>
+      <h1 className="text-2xl font-bold">JKlick — Ethnic Wear Storefronts with AI Try-On</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
         Each shop has its own private storefront link. Please open the link shared by the shop you
         want to browse.

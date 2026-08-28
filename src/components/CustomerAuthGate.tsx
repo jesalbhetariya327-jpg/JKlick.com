@@ -32,23 +32,23 @@ export function CustomerAuthGate({
   /** Confirms the signed-in account belongs to this shop; signs out and explains if not. */
   const verifyShop = async (userId: string): Promise<boolean> => {
     if (!shopId) return true;
-    const { data: profile } = await supabase
-      .from("customers")
-      .select("shop_id")
+    const { data: ownedShop } = await supabase
+      .from("shops")
+      .select("id")
       .eq("user_id", userId)
       .maybeSingle();
-    if (!profile) {
-      const { data: ownedShop } = await supabase
-        .from("shops")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (!ownedShop) return true;
+    if (ownedShop) {
       await supabase.auth.signOut();
       setBlocked("Shop owner accounts cannot shop here. Please log in with a customer account.");
       setStatus("out");
       return false;
     }
+    const { data: profile } = await supabase
+      .from("customers")
+      .select("shop_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!profile) return true;
     const ownShopId = (profile as { shop_id: string | null }).shop_id;
     if (!ownShopId || ownShopId === shopId) return true;
 

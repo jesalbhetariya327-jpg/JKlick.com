@@ -217,9 +217,6 @@ function AuthPage() {
             className="mx-auto w-full max-w-sm object-contain"
             decoding="async"
           />
-          <p className="mt-4 font-display text-lg italic text-primary">
-            Infinite styles, infinite try-ons
-          </p>
           <h1 className="mt-5 text-2xl font-bold">{heading}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "forgot"

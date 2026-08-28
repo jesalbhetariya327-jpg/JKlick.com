@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppAuth } from "@/lib/supabase-auth.middleware";
 
 /**
  * Returns a shop's UPI id to the shop owner, or to any signed-in shopper when
@@ -8,7 +8,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * unreadable through the public API.
  */
 export const getShopUpi = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .inputValidator((data) => z.object({ shopId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<string | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

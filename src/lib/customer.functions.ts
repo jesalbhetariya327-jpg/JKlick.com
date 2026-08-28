@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppAuth } from "@/lib/supabase-auth.middleware";
 
 const dataUrl = z
   .string()
@@ -27,7 +27,7 @@ export type SavedTryOn = {
 
 /** Saves a generated try-on into the signed-in customer's own private gallery. */
 export const saveTryOn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .inputValidator((input: unknown) =>
     z
       .object({

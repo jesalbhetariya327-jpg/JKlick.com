@@ -37,8 +37,18 @@ export function CustomerAuthGate({
       .select("shop_id")
       .eq("user_id", userId)
       .maybeSingle();
-    // Shop owners / admins have no customer profile — let them through.
-    if (!profile) return true;
+    if (!profile) {
+      const { data: ownedShop } = await supabase
+        .from("shops")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!ownedShop) return true;
+      await supabase.auth.signOut();
+      setBlocked("Shop owner accounts cannot shop here. Please log in with a customer account.");
+      setStatus("out");
+      return false;
+    }
     const ownShopId = (profile as { shop_id: string | null }).shop_id;
     if (!ownShopId || ownShopId === shopId) return true;
 
@@ -172,8 +182,8 @@ export function CustomerAuthGate({
   if (status === "in") return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10">
-      <div className="mx-auto max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-royal px-4 py-8">
+      <div className="w-full max-w-sm rounded-2xl bg-background p-5 shadow-soft">
         <div className="mb-6 text-center">
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-royal text-primary-foreground shadow-soft">
             <Sparkles className="size-7" />
@@ -195,7 +205,7 @@ export function CustomerAuthGate({
         )}
 
 
-        <Card className="shadow-soft">
+        <Card className="border-0 shadow-none">
           <CardContent className="space-y-4 p-5">
             {mode === "signup" && (
               <>

@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppAuth } from "@/lib/supabase-auth.middleware";
 
 export type ShopAnalytics = {
   shopId: string;
@@ -38,7 +38,7 @@ export type AdminAnalytics = {
 
 /** Analytics for admin accounts only. Admin status is checked server-side. */
 export const getAdminAnalytics = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .handler(async ({ context }): Promise<AdminAnalytics> => {
     const { data: adminRow } = await context.supabase
       .from("admins")

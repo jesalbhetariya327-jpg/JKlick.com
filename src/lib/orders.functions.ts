@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppAuth } from "@/lib/supabase-auth.middleware";
 
 export const ORDER_STATUSES = ["requested", "confirmed", "completed", "cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -55,7 +55,7 @@ const createSchema = z.object({
 
 /** Creates an order for the signed-in customer with a payment screenshot. */
 export const createOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .inputValidator((input: unknown) => createSchema.parse(input))
   .handler(async ({ data, context }) => {
     const decoded = data.paymentMethod === "upi" ? decodeDataUrl(data.screenshot ?? "") : null;
@@ -90,9 +90,9 @@ export const createOrder = createServerFn({ method: "POST" })
     if (items.length === 0) return { error: "These products are no longer available." };
     const total = items.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let path: string | null = null;
     if (decoded) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const ext = decoded.contentType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
       path = `${context.userId}/${crypto.randomUUID()}.${ext}`;
       const { error: uploadError } = await supabaseAdmin.storage
@@ -119,7 +119,10 @@ export const createOrder = createServerFn({ method: "POST" })
       .single();
 
     if (error || !order) {
-      if (path) await supabaseAdmin.storage.from("payment-screenshots").remove([path]);
+      if (path) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin.storage.from("payment-screenshots").remove([path]);
+      }
       return { error: "Could not place your order. Please try again." };
     }
 
@@ -209,7 +212,7 @@ async function hydrate(
 
 /** Order history for the signed-in customer only. */
 export const listMyOrders = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .handler(async ({ context }): Promise<OrderView[]> => {
     const { data } = await context.supabase
       .from("orders")
@@ -235,7 +238,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
 
 /** Orders for the signed-in shop owner's own shop only. */
 export const listShopOrders = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .handler(async ({ context }): Promise<OrderView[]> => {
     const { data: shop } = await context.supabase
       .from("shops")
@@ -262,7 +265,7 @@ export const listShopOrders = createServerFn({ method: "GET" })
 
 /** Shop owners update the status of their own shop's orders. */
 export const updateOrderStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .inputValidator((input: unknown) =>
     z.object({ orderId: z.string().uuid(), status: z.enum(ORDER_STATUSES) }).parse(input),
   )

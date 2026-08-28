@@ -107,28 +107,45 @@ function Checkout() {
       return;
     }
     setBusy(true);
-    const res = await submitOrder({
-      data: {
-        shopId,
-        items: items.map((i) => ({ productId: i.productId, quantity: i.qty })),
-        customerName: name.trim(),
-        customerPhone: phone.trim() || null,
-        deliveryAddress: address.trim(),
-        paymentMethod: payMethod,
-        screenshot: payMethod === "upi" ? screenshot : null,
-      },
-    });
-    setBusy(false);
-    if ("error" in res && res.error) {
-      toast.error(res.error);
-      return;
-    }
-    if ("ok" in res && res.ok) {
-      clearCart(shopId);
-      toast.success(
-        payMethod === "cod" ? "Order placed! Pay in cash on delivery." : "Order placed!",
+    try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 60_000),
       );
-      navigate({ to: "/my-orders", replace: true });
+      const res = await Promise.race([
+        submitOrder({
+          data: {
+            shopId,
+            items: items.map((i) => ({ productId: i.productId, quantity: i.qty })),
+            customerName: name.trim(),
+            customerPhone: phone.trim() || null,
+            deliveryAddress: address.trim(),
+            paymentMethod: payMethod,
+            screenshot: payMethod === "upi" ? screenshot : null,
+          },
+        }),
+        timeout,
+      ]);
+
+      if ("error" in res && res.error) {
+        toast.error(res.error);
+        return;
+      }
+      if ("ok" in res && res.ok) {
+        clearCart(shopId);
+        toast.success(
+          payMethod === "cod" ? "Order placed! Pay in cash on delivery." : "Order placed!",
+        );
+        navigate({ to: "/my-orders", replace: true });
+      }
+    } catch (err) {
+      const timedOut = err instanceof Error && err.message === "timeout";
+      toast.error(
+        timedOut
+          ? "Your order is taking too long — please check My Orders before retrying."
+          : "Could not place your order. Please check your connection and try again.",
+      );
+    } finally {
+      setBusy(false);
     }
   };
 

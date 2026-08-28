@@ -91,14 +91,6 @@ function Checkout() {
 
   const shop = shopQuery.data ?? null;
 
-  const readFile = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("read failed"));
-      reader.readAsDataURL(file);
-    });
-
   const place = async () => {
     if (!shop) return;
     if (!name.trim()) {

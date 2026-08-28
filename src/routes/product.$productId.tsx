@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatINR, whatsappLink, type Product, type Shop } from "@/lib/catalog";
 import { TryOnDialog } from "@/components/TryOnDialog";
 import { ProductImage } from "@/components/ProductImage";
-import { OwnerLoginButton } from "@/components/OwnerLoginButton";
 import { addToCart, useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -149,7 +148,6 @@ function ProductPage() {
   return (
     <CustomerAuthGate shopId={shop?.id ?? null} shopName={shop?.shop_name ?? null}>
     <div className="min-h-screen bg-background pb-64">
-      <OwnerLoginButton />
       <div className="relative">
         <div className="aspect-[3/4] w-full bg-muted">
           <ProductImage

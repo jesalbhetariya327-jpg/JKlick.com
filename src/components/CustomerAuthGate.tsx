@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 
@@ -259,12 +258,6 @@ export function CustomerAuthGate({
               {mode === "signup" ? "I already have an account" : "New here? Create an account"}
             </button>
 
-            <p className="text-center text-xs text-muted-foreground">
-              Shop owner?{" "}
-              <Link to="/auth" className="underline underline-offset-4">
-                Sign in here
-              </Link>
-            </p>
           </CardContent>
         </Card>
       </div>

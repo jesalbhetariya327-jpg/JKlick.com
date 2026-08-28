@@ -9,6 +9,7 @@ import { ArrowLeft, Banknote, Minus, Plus, Upload, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR, type Shop } from "@/lib/catalog";
 import { clearCart, setQty, upiLink, useCart } from "@/lib/cart";
+import { compressImageFile } from "@/lib/image-compress";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,14 +92,6 @@ function Checkout() {
 
   const shop = shopQuery.data ?? null;
 
-  const readFile = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("read failed"));
-      reader.readAsDataURL(file);
-    });
-
   const place = async () => {
     if (!shop) return;
     if (!name.trim()) {
@@ -114,28 +107,45 @@ function Checkout() {
       return;
     }
     setBusy(true);
-    const res = await submitOrder({
-      data: {
-        shopId,
-        items: items.map((i) => ({ productId: i.productId, quantity: i.qty })),
-        customerName: name.trim(),
-        customerPhone: phone.trim() || null,
-        deliveryAddress: address.trim(),
-        paymentMethod: payMethod,
-        screenshot: payMethod === "upi" ? screenshot : null,
-      },
-    });
-    setBusy(false);
-    if ("error" in res && res.error) {
-      toast.error(res.error);
-      return;
-    }
-    if ("ok" in res && res.ok) {
-      clearCart(shopId);
-      toast.success(
-        payMethod === "cod" ? "Order placed! Pay in cash on delivery." : "Order placed!",
+    try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 60_000),
       );
-      navigate({ to: "/my-orders", replace: true });
+      const res = await Promise.race([
+        submitOrder({
+          data: {
+            shopId,
+            items: items.map((i) => ({ productId: i.productId, quantity: i.qty })),
+            customerName: name.trim(),
+            customerPhone: phone.trim() || null,
+            deliveryAddress: address.trim(),
+            paymentMethod: payMethod,
+            screenshot: payMethod === "upi" ? screenshot : null,
+          },
+        }),
+        timeout,
+      ]);
+
+      if ("error" in res && res.error) {
+        toast.error(res.error);
+        return;
+      }
+      if ("ok" in res && res.ok) {
+        clearCart(shopId);
+        toast.success(
+          payMethod === "cod" ? "Order placed! Pay in cash on delivery." : "Order placed!",
+        );
+        navigate({ to: "/my-orders", replace: true });
+      }
+    } catch (err) {
+      const timedOut = err instanceof Error && err.message === "timeout";
+      toast.error(
+        timedOut
+          ? "Your order is taking too long — please check My Orders before retrying."
+          : "Could not place your order. Please check your connection and try again.",
+      );
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -311,7 +321,7 @@ function Checkout() {
                       toast.error("Please choose an image under 8 MB");
                       return;
                     }
-                    void readFile(file).then(setScreenshot);
+                    void compressImageFile(file).then(setScreenshot);
                   }}
                 />
               </>

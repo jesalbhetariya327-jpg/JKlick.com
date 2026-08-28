@@ -303,7 +303,7 @@ function Checkout() {
                       toast.error("Please choose an image under 8 MB");
                       return;
                     }
-                    void readFile(file).then(setScreenshot);
+                    void compressImageFile(file).then(setScreenshot);
                   }}
                 />
               </>

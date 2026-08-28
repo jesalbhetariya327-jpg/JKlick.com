@@ -14,7 +14,7 @@ import { firstPasswordProblem } from "@/lib/password";
 import { sendPasswordResetLink } from "@/lib/account.functions";
 import { notifyNewSignup } from "@/lib/notify.functions";
 import { recordLogin } from "@/lib/login-log";
-import jklickLogo from "@/assets/jklick-logo-lockup.jpg.asset.json";
+import jklickLogo from "@/assets/jk-infinity-logo.svg";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({

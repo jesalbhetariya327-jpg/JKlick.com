@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
-import jklickLogo from "@/assets/jklick-logo-lockup.jpg.asset.json";
+import jklickLogo from "@/assets/jk-infinity-logo.svg";
 
 export const Route = createFileRoute("/customer-login")({
   head: () => ({

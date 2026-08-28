@@ -143,9 +143,6 @@ function CustomerLogin() {
             className="mx-auto w-full max-w-sm object-contain"
             decoding="async"
           />
-          <p className="mt-4 font-display text-lg italic text-primary">
-            Infinite styles, infinite try-ons
-          </p>
           <h1 className="mt-5 text-2xl font-bold">
             {mode === "signup" ? "Create your shopper account" : "Shopper login"}
           </h1>

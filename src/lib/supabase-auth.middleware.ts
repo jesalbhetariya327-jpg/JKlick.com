@@ -20,9 +20,9 @@ function createAuthenticatedFetch(apiKey: string): typeof fetch {
 
 /** Validates the request bearer and exposes an RLS-scoped backend client. */
 export const requireAppAuth = createMiddleware({ type: "function" }).server(async ({ next }) => {
-  const backendUrl = process.env["SUPABASE_URL"] ?? import.meta.env.VITE_SUPABASE_URL;
+  const backendUrl = process.env["SUPABASE_URL"] ?? import.meta.env["VITE_SUPABASE_URL"];
   const publishableKey =
-    process.env["SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    process.env["SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
   if (!backendUrl || !publishableKey) throw new Error("The backend connection is not configured.");
 
   const authHeader = getRequest()?.headers.get("authorization");

@@ -67,7 +67,7 @@ export const saveTryOn = createServerFn({ method: "POST" })
 
 /** Lists only the signed-in customer's own saved try-ons. */
 export const listSavedTryOns = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .handler(async ({ context }): Promise<SavedTryOn[]> => {
     const { data } = await context.supabase
       .from("customer_tryons")
@@ -97,7 +97,7 @@ export const listSavedTryOns = createServerFn({ method: "GET" })
 
 /** Deletes one saved try-on belonging to the signed-in customer. */
 export const deleteSavedTryOn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: row } = await context.supabase

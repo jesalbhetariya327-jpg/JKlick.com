@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PasswordChecklist } from "@/components/PasswordChecklist";
 import { firstPasswordProblem } from "@/lib/password";
-import jklickLogo from "@/assets/jklick-logo-lockup.jpg.asset.json";
+import jklickLogo from "@/assets/jk-infinity-logo.svg";
 
 export const Route = createFileRoute("/customer-login")({
   head: () => ({
@@ -138,9 +138,9 @@ function CustomerLogin() {
       <div className="mx-auto mt-5 max-w-md">
         <div className="mb-6 text-center">
           <img
-            src={jklickLogo.url}
+            src={jklickLogo}
             alt="JKlick — Virar ethnic wear"
-            className="mx-auto w-full max-w-sm border border-border object-contain shadow-soft"
+            className="mx-auto w-full max-w-sm object-contain"
             decoding="async"
           />
           <p className="mt-4 font-display text-lg italic text-primary">

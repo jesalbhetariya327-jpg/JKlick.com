@@ -9,6 +9,7 @@ import { ArrowLeft, Banknote, Minus, Plus, Upload, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR, type Shop } from "@/lib/catalog";
 import { clearCart, setQty, upiLink, useCart } from "@/lib/cart";
+import { compressImageFile } from "@/lib/image-compress";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

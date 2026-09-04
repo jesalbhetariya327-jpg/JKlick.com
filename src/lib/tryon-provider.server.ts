@@ -20,8 +20,8 @@ export type TryOnInput = {
 export type TryOnResult = { imageUrl: string } | { error: string };
 
 const SPACE_ID = "yisol/IDM-VTON";
-/** The Space can cold-start for 30-60s, so allow a generous overall budget. */
-const OVERALL_TIMEOUT_MS = 90_000;
+/** The free Space can cold-start and queue work, so allow a generous overall budget. */
+const OVERALL_TIMEOUT_MS = 120_000;
 
 function dataUrlToBlob(dataUrl: string): Blob {
   const match = /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(dataUrl);
@@ -81,6 +81,7 @@ function extractImageUrl(value: unknown): string | null {
 
 export async function runTryOn(input: TryOnInput): Promise<TryOnResult> {
   const hfToken = process.env["HF_TOKEN"];
+  const startedAt = Date.now();
 
   let personBlob: Blob;
   let garmentBlob: Blob;
@@ -88,8 +89,15 @@ export async function runTryOn(input: TryOnInput): Promise<TryOnResult> {
     personBlob = dataUrlToBlob(input.personImage);
     garmentBlob = dataUrlToBlob(input.garmentImage);
   } catch {
+    console.error("try-on image decode failed");
     return { error: "That photo could not be read. Please try another one." };
   }
+
+  console.info("try-on provider started", {
+    personBytes: personBlob.size,
+    garmentBytes: garmentBlob.size,
+    authenticated: Boolean(hfToken),
+  });
 
   // New seed on every call so repeat try-ons of the same garment differ.
   const seed = Math.floor(Math.random() * 2_147_483_647);
@@ -103,6 +111,7 @@ export async function runTryOn(input: TryOnInput): Promise<TryOnResult> {
         SPACE_ID,
         hfToken ? { hf_token: hfToken as `hf_${string}` } : {},
       );
+      console.info("try-on provider connected", { elapsedMs: Date.now() - startedAt });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error("try-on connect failed", message);
@@ -125,6 +134,7 @@ export async function runTryOn(input: TryOnInput): Promise<TryOnResult> {
         seed,
       });
       result = (response as { data?: unknown }).data;
+      console.info("try-on prediction returned", { elapsedMs: Date.now() - startedAt });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error("try-on predict failed", message);
@@ -144,6 +154,7 @@ export async function runTryOn(input: TryOnInput): Promise<TryOnResult> {
       console.error("try-on missing image", JSON.stringify(result[0])?.slice(0, 500));
       return { error: "No image was returned. Please try a different photo." };
     }
+    console.info("try-on provider completed", { elapsedMs: Date.now() - startedAt });
     return { imageUrl };
   })();
 

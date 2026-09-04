@@ -44,6 +44,11 @@ function storagePathFromUrl(url: string): string | null {
 export const generateTryOn = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => schema.parse(input))
   .handler(async ({ data }) => {
+    const requestStartedAt = Date.now();
+    console.info("try-on request accepted", {
+      productId: data.productId,
+      personPayloadBytes: Buffer.byteLength(data.personImage, "utf8"),
+    });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runTryOn } = await import("./tryon-provider.server");
 
@@ -101,6 +106,11 @@ export const generateTryOn = createServerFn({ method: "POST" })
       }
 
       const contentType = blob.type && blob.type.startsWith("image/") ? blob.type : "image/jpeg";
+      console.info("try-on product loaded", {
+        productId: data.productId,
+        garmentBytes: blob.size,
+        elapsedMs: Date.now() - requestStartedAt,
+      });
       const base64 = Buffer.from(await blob.arrayBuffer()).toString("base64");
       garmentImage = `data:${contentType};base64,${base64}`;
     } catch {
@@ -119,7 +129,14 @@ export const generateTryOn = createServerFn({ method: "POST" })
       garmentDescription: description,
     });
 
-    if ("error" in result) return { error: result.error };
+    if ("error" in result) {
+      console.error("try-on request failed", {
+        productId: data.productId,
+        elapsedMs: Date.now() - requestStartedAt,
+        error: result.error,
+      });
+      return { error: result.error };
+    }
 
     await supabaseAdmin
       .from("tryon_log")
@@ -130,5 +147,9 @@ export const generateTryOn = createServerFn({ method: "POST" })
         duration_ms: Date.now() - startedAt,
       });
 
+    console.info("try-on request completed", {
+      productId: data.productId,
+      elapsedMs: Date.now() - requestStartedAt,
+    });
     return { imageUrl: result.imageUrl };
   });

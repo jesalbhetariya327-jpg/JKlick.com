@@ -4,6 +4,7 @@ import { ImagePlus, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, type Product } from "@/lib/catalog";
+import { compressImageFile } from "@/lib/image-compress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,22 +81,32 @@ export function ProductForm({ open, onOpenChange, shopId, product, onSaved }: Pr
 
   const uploadPhoto = async (file: File) => {
     setUploading(true);
-    const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${shopId}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("product-photos").upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
-    if (error) {
+    try {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please choose a valid photo");
+        return;
+      }
+      const compressed = await compressImageFile(file, 1400, 0.75);
+      if (!compressed.startsWith("data:image/")) throw new Error("invalid image");
+      const blob = await (await fetch(compressed)).blob();
+      const path = `${shopId}/${crypto.randomUUID()}.jpg`;
+      const { error } = await supabase.storage.from("product-photos").upload(path, blob, {
+        contentType: "image/jpeg",
+        upsert: false,
+      });
+      if (error) throw error;
+
+      const { data } = await supabase.storage
+        .from("product-photos")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+      setPhotoUrl(data?.signedUrl ?? null);
+    } catch {
       setUploading(false);
       toast.error("Could not upload the photo");
       return;
+    } finally {
+      setUploading(false);
     }
-    const { data } = await supabase.storage
-      .from("product-photos")
-      .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
-    setPhotoUrl(data?.signedUrl ?? null);
-    setUploading(false);
   };
 
   const save = async () => {

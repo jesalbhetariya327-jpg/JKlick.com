@@ -26,7 +26,7 @@ type Props = {
   shop: Shop | null;
 };
 
-const ESTIMATED_SECONDS = 45;
+const ESTIMATED_SECONDS = 60;
 
 export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
   const run = useServerFn(generateTryOn);
@@ -174,7 +174,7 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
             )}
             <Loader2 className="size-8 animate-spin text-primary" />
             <div className="w-full space-y-2">
-              <p className="text-sm font-medium">Creating your look...</p>
+              <p className="text-sm font-medium">Creating your look... this can take up to a minute.</p>
               <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all duration-1000"
@@ -184,7 +184,7 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                {elapsed}s elapsed · usually ready in about {ESTIMATED_SECONDS} seconds
+                {elapsed}s elapsed · the free try-on service can take up to {ESTIMATED_SECONDS} seconds
               </p>
             </div>
           </div>

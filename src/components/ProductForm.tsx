@@ -86,7 +86,7 @@ export function ProductForm({ open, onOpenChange, shopId, product, onSaved }: Pr
         toast.error("Please choose a valid photo");
         return;
       }
-      const compressed = await compressImageFile(file, 1400, 0.75);
+      const compressed = await compressImageFile(file, 1400, 0.75, true);
       if (!compressed.startsWith("data:image/")) throw new Error("invalid image");
       const blob = await (await fetch(compressed)).blob();
       const path = `${shopId}/${crypto.randomUUID()}.jpg`;

@@ -158,15 +158,19 @@ export async function runTryOn(input: TryOnInput): Promise<TryOnResult> {
     return { imageUrl };
   })();
 
-  const timeout = new Promise<TryOnResult>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          error: "The try-on service is taking too long right now. Please try again in a few minutes.",
-        }),
-      OVERALL_TIMEOUT_MS,
-    ),
-  );
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<TryOnResult>((resolve) => {
+    timeoutId = setTimeout(() => {
+      console.error("try-on provider timed out", { elapsedMs: Date.now() - startedAt });
+      resolve({
+        error: "The try-on service is taking too long right now. Please try again in a few minutes.",
+      });
+    }, OVERALL_TIMEOUT_MS);
+  });
 
-  return Promise.race([work, timeout]);
+  try {
+    return await Promise.race([work, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 }

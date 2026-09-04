@@ -113,7 +113,7 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
       return;
     }
     try {
-      const dataUrl = await compressImageFile(file, 1400, 0.75);
+      const dataUrl = await compressImageFile(file, 1400, 0.75, true);
       if (!dataUrl.startsWith("data:image/") || dataUrl.length > 12_000_000) {
         toast.error("This photo is still too large. Please choose a different photo.");
         return;

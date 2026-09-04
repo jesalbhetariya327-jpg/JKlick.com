@@ -16,6 +16,7 @@ import {
   useTryOnSession,
 } from "@/lib/tryon-session";
 import { canWebShareFiles, downloadBlob, watermarkLook } from "@/lib/share-image";
+import { compressImageFile } from "@/lib/image-compress";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -26,7 +27,7 @@ type Props = {
   shop: Shop | null;
 };
 
-const ESTIMATED_SECONDS = 60;
+const MAX_WAIT_SECONDS = 120;
 
 export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
   const run = useServerFn(generateTryOn);
@@ -77,14 +78,6 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
     return () => clearInterval(timer);
   }, [loading]);
 
-  const readFile = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("read failed"));
-      reader.readAsDataURL(file);
-    });
-
   const generate = async (dataUrl: string) => {
     setResult(null);
     setLoading(true);
@@ -115,14 +108,22 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
   };
 
   const handleFile = async (file: File) => {
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Please choose a photo under 8 MB");
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose a valid photo");
       return;
     }
-    const dataUrl = await readFile(file);
-    // Kept in this tab's memory only — never saved anywhere.
-    setPersonImage(dataUrl);
-    await generate(dataUrl);
+    try {
+      const dataUrl = await compressImageFile(file, 1400, 0.75, true);
+      if (!dataUrl.startsWith("data:image/") || dataUrl.length > 12_000_000) {
+        toast.error("This photo is still too large. Please choose a different photo.");
+        return;
+      }
+      // Kept in this tab's memory only — never saved anywhere.
+      setPersonImage(dataUrl);
+      await generate(dataUrl);
+    } catch {
+      toast.error("That photo could not be read. Please try another one.");
+    }
   };
 
   const storefrontUrl =
@@ -174,17 +175,21 @@ export function TryOnDialog({ open, onOpenChange, product, shop }: Props) {
             )}
             <Loader2 className="size-8 animate-spin text-primary" />
             <div className="w-full space-y-2">
-              <p className="text-sm font-medium">Creating your look... this can take up to a minute.</p>
+              <p className="text-sm font-medium">
+                {elapsed >= 60
+                  ? "Still working — busy right now, hang tight a little longer"
+                  : "Creating your look... this can take up to a minute."}
+              </p>
               <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all duration-1000"
                   style={{
-                    width: `${Math.min(95, (elapsed / ESTIMATED_SECONDS) * 100).toFixed(0)}%`,
+                    width: `${Math.min(95, (elapsed / MAX_WAIT_SECONDS) * 100).toFixed(0)}%`,
                   }}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                {elapsed}s elapsed · the free try-on service can take up to {ESTIMATED_SECONDS} seconds
+                {elapsed}s elapsed · the free try-on service can take up to {MAX_WAIT_SECONDS} seconds
               </p>
             </div>
           </div>

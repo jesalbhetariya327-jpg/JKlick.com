@@ -3,6 +3,7 @@ export async function compressImageFile(
   file: File,
   maxSide = 1400,
   quality = 0.75,
+  alwaysUseJpeg = false,
 ): Promise<string> {
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -31,7 +32,7 @@ export async function compressImageFile(
     ctx.drawImage(img, 0, 0, width, height);
 
     const out = canvas.toDataURL("image/jpeg", quality);
-    return out.length < dataUrl.length ? out : dataUrl;
+    return alwaysUseJpeg || out.length < dataUrl.length ? out : dataUrl;
   } catch {
     // If anything goes wrong, fall back to the original image.
     return dataUrl;
